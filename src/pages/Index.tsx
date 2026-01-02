@@ -75,7 +75,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h1 className="text-3xl font-serif font-bold text-foreground mb-2">
-                  Welcome to <span className="gradient-gold-text">Adagu Kadai</span>
+                  Welcome to <span className="gradient-gold-text">Ravi Shop</span>
                 </h1>
                 <p className="text-muted-foreground">
                   Manage your pawn records efficiently and securely
