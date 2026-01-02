@@ -1,22 +1,21 @@
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { calculateInterest, formatCurrency } from '@/lib/pawnCalculations';
+import { formatCurrency } from '@/lib/pawnCalculations';
 import { Calculator, IndianRupee, Percent, Calendar } from 'lucide-react';
 
 export function InterestCalculator() {
   const [amount, setAmount] = useState<string>('100000');
   const [rate, setRate] = useState<string>('2');
-  const [days, setDays] = useState<string>('30');
+  const [months, setMonths] = useState<string>('1');
 
-  const pawnDate = new Date();
-  pawnDate.setDate(pawnDate.getDate() - parseInt(days || '0'));
+  const pawnAmount = parseFloat(amount || '0');
+  const interestRate = parseFloat(rate || '0');
+  const duration = parseFloat(months || '0');
 
-  const { interestAmount, totalPayable, months } = calculateInterest(
-    parseFloat(amount || '0'),
-    parseFloat(rate || '0'),
-    pawnDate.toISOString().split('T')[0]
-  );
+  // Interest calculation: (Principal * Rate * Time) / 100
+  const interestAmount = (pawnAmount * interestRate * duration) / 100;
+  const totalPayable = pawnAmount + interestAmount;
 
   return (
     <div className="glass-card rounded-2xl gold-border p-6 animate-fade-in">
@@ -58,16 +57,17 @@ export function InterestCalculator() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="calc-days" className="flex items-center gap-2 text-foreground">
+          <Label htmlFor="calc-months" className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-gold" />
-            Duration (Days)
+            Duration (Months)
           </Label>
           <Input
-            id="calc-days"
+            id="calc-months"
             type="number"
-            value={days}
-            onChange={(e) => setDays(e.target.value)}
-            placeholder="Enter days"
+            step="0.5"
+            value={months}
+            onChange={(e) => setMonths(e.target.value)}
+            placeholder="Enter months"
           />
         </div>
       </div>
@@ -76,7 +76,7 @@ export function InterestCalculator() {
         <div className="text-center p-3">
           <p className="text-sm text-muted-foreground mb-1">Duration</p>
           <p className="text-xl font-semibold text-foreground">
-            {months.toFixed(2)} months
+            {duration} {duration === 1 ? 'month' : 'months'}
           </p>
         </div>
         <div className="text-center p-3">
