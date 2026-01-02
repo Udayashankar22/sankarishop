@@ -39,7 +39,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <Gem className="h-10 w-10 text-gold" />
           </div>
           <h1 className="text-3xl font-serif font-bold gradient-gold-text mb-2">
-            Adagu Kadai
+            Ravi Shop
           </h1>
           <p className="text-muted-foreground">
             Pawn Broker Management System

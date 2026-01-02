@@ -25,7 +25,7 @@ export function Header({ currentView, onViewChange, onLogout }: HeaderProps) {
             </div>
             <div>
               <h1 className="text-xl font-serif font-bold gradient-gold-text">
-                Adagu Kadai
+                Ravi Shop
               </h1>
               <p className="text-xs text-muted-foreground hidden sm:block">
                 Pawn Broker Management
