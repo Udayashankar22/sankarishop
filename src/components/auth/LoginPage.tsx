@@ -103,9 +103,6 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </Button>
           </form>
 
-          <p className="text-center text-sm text-muted-foreground mt-6">
-            Demo credentials: <span className="text-gold">ravisankari / udayarose</span>
-          </p>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '200ms' }}>

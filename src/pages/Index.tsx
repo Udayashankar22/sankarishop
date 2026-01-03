@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePawnStore } from '@/hooks/usePawnStore';
 import { Header } from '@/components/layout/Header';
 import { StatsCards } from '@/components/dashboard/StatsCards';
@@ -14,7 +14,9 @@ import { Plus, Gem } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('ravi_shop_logged_in') === 'true';
+  });
   const [currentView, setCurrentView] = useState<'dashboard' | 'records' | 'calculator'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PawnRecord | null>(null);
@@ -24,8 +26,18 @@ const Index = () => {
 
   const { records, addRecord, updateRecord, deleteRecord, redeemRecord, getStats } = usePawnStore();
 
+  const handleLogin = () => {
+    localStorage.setItem('ravi_shop_logged_in', 'true');
+    setIsLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('ravi_shop_logged_in');
+    setIsLoggedIn(false);
+  };
+
   if (!isLoggedIn) {
-    return <LoginPage onLogin={() => setIsLoggedIn(true)} />;
+    return <LoginPage onLogin={handleLogin} />;
   }
 
   const handleAddRecord = (data: Omit<PawnRecord, 'id'>) => {
@@ -65,7 +77,7 @@ const Index = () => {
       <Header
         currentView={currentView}
         onViewChange={setCurrentView}
-        onLogout={() => setIsLoggedIn(false)}
+        onLogout={handleLogout}
       />
 
       <main className="container mx-auto px-4 py-8">
