@@ -17,10 +17,10 @@ export function LoginPage({ onLogin }: LoginPageProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simple demo authentication
-    if (username === 'admin' && password === 'admin123') {
+    if (username === 'ravisankari' && password === 'udayarose') {
       onLogin();
     } else {
-      setError('Invalid credentials. Use admin / admin123');
+      setError('Invalid credentials. Use ravisankari / udayarose');
     }
   };
 
@@ -104,7 +104,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </form>
 
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Demo credentials: <span className="text-gold">admin / admin123</span>
+            Demo credentials: <span className="text-gold">ravisankari / udayarose</span>
           </p>
         </div>
 
