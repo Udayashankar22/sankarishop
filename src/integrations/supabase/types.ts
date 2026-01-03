@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      pawn_records: {
+        Row: {
+          address: string
+          created_at: string
+          customer_name: string
+          id: string
+          interest_rate: number
+          jewellery_type: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_weight: number
+          pawn_amount: number
+          pawn_date: string
+          phone_number: string
+          redeemed_date: string | null
+          serial_number: string
+          status: Database["public"]["Enums"]["pawn_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address: string
+          created_at?: string
+          customer_name: string
+          id?: string
+          interest_rate: number
+          jewellery_type: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_weight: number
+          pawn_amount: number
+          pawn_date: string
+          phone_number: string
+          redeemed_date?: string | null
+          serial_number: string
+          status?: Database["public"]["Enums"]["pawn_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string
+          created_at?: string
+          customer_name?: string
+          id?: string
+          interest_rate?: number
+          jewellery_type?: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_weight?: number
+          pawn_amount?: number
+          pawn_date?: string
+          phone_number?: string
+          redeemed_date?: string | null
+          serial_number?: string
+          status?: Database["public"]["Enums"]["pawn_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +76,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      jewellery_type:
+        | "Gold Ring"
+        | "Gold Chain"
+        | "Gold Bangle"
+        | "Gold Earrings"
+        | "Gold Necklace"
+        | "Silver Ring"
+        | "Silver Chain"
+        | "Silver Bangle"
+        | "Diamond Ring"
+        | "Diamond Necklace"
+        | "Other"
+      pawn_status: "Active" | "Redeemed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +215,21 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      jewellery_type: [
+        "Gold Ring",
+        "Gold Chain",
+        "Gold Bangle",
+        "Gold Earrings",
+        "Gold Necklace",
+        "Silver Ring",
+        "Silver Chain",
+        "Silver Bangle",
+        "Diamond Ring",
+        "Diamond Necklace",
+        "Other",
+      ],
+      pawn_status: ["Active", "Redeemed"],
+    },
   },
 } as const

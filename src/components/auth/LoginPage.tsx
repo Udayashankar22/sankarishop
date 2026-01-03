@@ -2,25 +2,50 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Gem, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { Gem, Lock, Mail, Eye, EyeOff, UserPlus, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
 
-interface LoginPageProps {
-  onLogin: () => void;
-}
-
-export function LoginPage({ onLogin }: LoginPageProps) {
-  const [username, setUsername] = useState('');
+export function LoginPage() {
+  const { signIn, signUp } = useAuth();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple demo authentication
-    if (username === 'ravisankari' && password === 'udayarose') {
-      onLogin();
-    } else {
-      setError('Invalid credentials. Use ravisankari / udayarose');
+    setIsLoading(true);
+
+    try {
+      if (isSignUp) {
+        const { error } = await signUp(email, password);
+        if (error) {
+          if (error.message.includes('already registered')) {
+            toast.error('This email is already registered. Please sign in instead.');
+          } else {
+            toast.error(error.message);
+          }
+        } else {
+          toast.success('Account created successfully! You are now signed in.');
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast.error('Invalid email or password. Please try again.');
+          } else {
+            toast.error(error.message);
+          }
+        } else {
+          toast.success('Signed in successfully!');
+        }
+      }
+    } catch (err) {
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -49,20 +74,20 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         {/* Login Form */}
         <div className="glass-card rounded-2xl p-8 gold-border animate-fade-in" style={{ animationDelay: '100ms' }}>
           <h2 className="text-xl font-serif font-semibold text-foreground mb-6 text-center">
-            Welcome Back
+            {isSignUp ? 'Create Account' : 'Welcome Back'}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="username" className="text-foreground">Username</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter username"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
                   className="pl-10"
                   required
                 />
@@ -80,6 +105,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   className="pl-10 pr-10"
+                  minLength={6}
                   required
                 />
                 <button
@@ -90,19 +116,41 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              {isSignUp && (
+                <p className="text-xs text-muted-foreground">
+                  Password must be at least 6 characters
+                </p>
+              )}
             </div>
 
-            {error && (
-              <p className="text-destructive text-sm text-center bg-destructive/10 py-2 px-4 rounded-lg">
-                {error}
-              </p>
-            )}
-
-            <Button type="submit" variant="gold" size="lg" className="w-full">
-              Sign In
+            <Button type="submit" variant="gold" size="lg" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                  {isSignUp ? 'Creating Account...' : 'Signing In...'}
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  {isSignUp ? <UserPlus className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+                  {isSignUp ? 'Create Account' : 'Sign In'}
+                </span>
+              )}
             </Button>
           </form>
 
+          <div className="mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-muted-foreground hover:text-gold transition-colors"
+            >
+              {isSignUp ? (
+                <>Already have an account? <span className="text-gold font-medium">Sign In</span></>
+              ) : (
+                <>Don't have an account? <span className="text-gold font-medium">Create Account</span></>
+              )}
+            </button>
+          </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6 animate-fade-in" style={{ animationDelay: '200ms' }}>

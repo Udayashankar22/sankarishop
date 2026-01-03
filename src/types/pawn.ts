@@ -5,12 +5,13 @@ export interface PawnRecord {
   phoneNumber: string;
   address: string;
   pawnDate: string;
-  jewelleryType: string;
+  jewelleryType: JewelleryType;
   jewelleryWeight: number;
   pawnAmount: number;
   interestRate: number;
   status: 'Active' | 'Redeemed';
   redeemedDate?: string;
+  userId?: string;
 }
 
 export interface DashboardStats {
@@ -26,7 +27,9 @@ export type JewelleryType =
   | 'Gold Necklace'
   | 'Gold Bangle'
   | 'Gold Earrings'
-  | 'Gold Bracelet'
-  | 'Silver Items'
-  | 'Diamond Jewellery'
+  | 'Silver Ring'
+  | 'Silver Chain'
+  | 'Silver Bangle'
+  | 'Diamond Ring'
+  | 'Diamond Necklace'
   | 'Other';

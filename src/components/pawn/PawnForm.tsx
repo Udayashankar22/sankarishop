@@ -14,9 +14,11 @@ const jewelleryTypes: JewelleryType[] = [
   'Gold Necklace',
   'Gold Bangle',
   'Gold Earrings',
-  'Gold Bracelet',
-  'Silver Items',
-  'Diamond Jewellery',
+  'Silver Ring',
+  'Silver Chain',
+  'Silver Bangle',
+  'Diamond Ring',
+  'Diamond Necklace',
   'Other',
 ];
 
@@ -33,7 +35,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     phoneNumber: initialData?.phoneNumber || '',
     address: initialData?.address || '',
     pawnDate: initialData?.pawnDate || new Date().toISOString().split('T')[0],
-    jewelleryType: initialData?.jewelleryType || '',
+    jewelleryType: initialData?.jewelleryType || 'Gold Ring' as JewelleryType,
     jewelleryWeight: initialData?.jewelleryWeight?.toString() || '',
     pawnAmount: initialData?.pawnAmount?.toString() || '',
     interestRate: initialData?.interestRate?.toString() || '2',
@@ -48,7 +50,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
       phoneNumber: formData.phoneNumber,
       address: formData.address,
       pawnDate: formData.pawnDate,
-      jewelleryType: formData.jewelleryType,
+      jewelleryType: formData.jewelleryType as JewelleryType,
       jewelleryWeight: parseFloat(formData.jewelleryWeight),
       pawnAmount: parseFloat(formData.pawnAmount),
       interestRate: parseFloat(formData.interestRate),
@@ -130,7 +132,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               <Label htmlFor="jewelleryType" className="text-foreground">Jewellery Type *</Label>
               <Select
                 value={formData.jewelleryType}
-                onValueChange={(value) => setFormData({ ...formData, jewelleryType: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, jewelleryType: value as JewelleryType })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />

@@ -1,98 +1,165 @@
 import { useState, useEffect } from 'react';
-import { PawnRecord, DashboardStats } from '@/types/pawn';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { PawnRecord, DashboardStats, JewelleryType } from '@/types/pawn';
 import { calculateInterest } from '@/lib/pawnCalculations';
 
-const STORAGE_KEY = 'adagu_kadai_pawns';
+type DbJewelleryType = 'Gold Ring' | 'Gold Chain' | 'Gold Bangle' | 'Gold Earrings' | 'Gold Necklace' | 'Silver Ring' | 'Silver Chain' | 'Silver Bangle' | 'Diamond Ring' | 'Diamond Necklace' | 'Other';
+type DbPawnStatus = 'Active' | 'Redeemed';
 
-// Sample data for demonstration
-const sampleData: PawnRecord[] = [
-  {
-    id: '1',
-    serialNumber: 'AK250101',
-    name: 'Rajesh Kumar',
-    phoneNumber: '9876543210',
-    address: '123, Gandhi Street, Chennai',
-    pawnDate: '2024-12-15',
-    jewelleryType: 'Gold Chain',
-    jewelleryWeight: 25.5,
-    pawnAmount: 125000,
-    interestRate: 2,
-    status: 'Active',
-  },
-  {
-    id: '2',
-    serialNumber: 'AK250102',
-    name: 'Priya Devi',
-    phoneNumber: '9876543211',
-    address: '456, Nehru Road, Madurai',
-    pawnDate: '2024-11-20',
-    jewelleryType: 'Gold Bangle',
-    jewelleryWeight: 30.0,
-    pawnAmount: 150000,
-    interestRate: 2.5,
-    status: 'Active',
-  },
-  {
-    id: '3',
-    serialNumber: 'AK250103',
-    name: 'Suresh Babu',
-    phoneNumber: '9876543212',
-    address: '789, Anna Nagar, Coimbatore',
-    pawnDate: '2024-10-01',
-    jewelleryType: 'Gold Necklace',
-    jewelleryWeight: 45.0,
-    pawnAmount: 225000,
-    interestRate: 2,
-    status: 'Redeemed',
-    redeemedDate: '2024-12-20',
-  },
-];
+interface DbPawnRecord {
+  id: string;
+  user_id: string;
+  serial_number: string;
+  customer_name: string;
+  phone_number: string;
+  address: string;
+  pawn_date: string;
+  jewellery_type: DbJewelleryType;
+  jewellery_weight: number;
+  pawn_amount: number;
+  interest_rate: number;
+  status: DbPawnStatus;
+  redeemed_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function mapDbToRecord(db: DbPawnRecord): PawnRecord {
+  return {
+    id: db.id,
+    serialNumber: db.serial_number,
+    name: db.customer_name,
+    phoneNumber: db.phone_number,
+    address: db.address,
+    pawnDate: db.pawn_date,
+    jewelleryType: db.jewellery_type as JewelleryType,
+    jewelleryWeight: Number(db.jewellery_weight),
+    pawnAmount: Number(db.pawn_amount),
+    interestRate: Number(db.interest_rate),
+    status: db.status,
+    redeemedDate: db.redeemed_date || undefined,
+    userId: db.user_id,
+  };
+}
 
 export function usePawnStore() {
+  const { user } = useAuth();
   const [records, setRecords] = useState<PawnRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setRecords(JSON.parse(stored));
+  const fetchRecords = async () => {
+    if (!user) {
+      setRecords([]);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('pawn_records')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching records:', error);
     } else {
-      // Initialize with sample data
-      setRecords(sampleData);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sampleData));
+      setRecords((data as DbPawnRecord[]).map(mapDbToRecord));
     }
     setIsLoading(false);
-  }, []);
-
-  const saveRecords = (newRecords: PawnRecord[]) => {
-    setRecords(newRecords);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newRecords));
   };
 
-  const addRecord = (record: Omit<PawnRecord, 'id'>) => {
-    const newRecord = { ...record, id: Date.now().toString() };
-    saveRecords([...records, newRecord]);
-    return newRecord;
+  useEffect(() => {
+    fetchRecords();
+  }, [user]);
+
+  const addRecord = async (record: Omit<PawnRecord, 'id'>) => {
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('pawn_records')
+      .insert({
+        user_id: user.id,
+        serial_number: record.serialNumber,
+        customer_name: record.name,
+        phone_number: record.phoneNumber,
+        address: record.address,
+        pawn_date: record.pawnDate,
+        jewellery_type: record.jewelleryType as DbJewelleryType,
+        jewellery_weight: record.jewelleryWeight,
+        pawn_amount: record.pawnAmount,
+        interest_rate: record.interestRate,
+        status: 'Active' as DbPawnStatus,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding record:', error);
+      throw error;
+    }
+
+    await fetchRecords();
+    return mapDbToRecord(data as DbPawnRecord);
   };
 
-  const updateRecord = (id: string, updates: Partial<PawnRecord>) => {
-    const newRecords = records.map((r) =>
-      r.id === id ? { ...r, ...updates } : r
-    );
-    saveRecords(newRecords);
+  const updateRecord = async (id: string, updates: Partial<PawnRecord>) => {
+    const updateData: Record<string, unknown> = {};
+    
+    if (updates.serialNumber) updateData.serial_number = updates.serialNumber;
+    if (updates.name) updateData.customer_name = updates.name;
+    if (updates.phoneNumber) updateData.phone_number = updates.phoneNumber;
+    if (updates.address) updateData.address = updates.address;
+    if (updates.pawnDate) updateData.pawn_date = updates.pawnDate;
+    if (updates.jewelleryType) updateData.jewellery_type = updates.jewelleryType;
+    if (updates.jewelleryWeight) updateData.jewellery_weight = updates.jewelleryWeight;
+    if (updates.pawnAmount) updateData.pawn_amount = updates.pawnAmount;
+    if (updates.interestRate) updateData.interest_rate = updates.interestRate;
+    if (updates.status) updateData.status = updates.status;
+    if (updates.redeemedDate) updateData.redeemed_date = updates.redeemedDate;
+
+    const { error } = await supabase
+      .from('pawn_records')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error updating record:', error);
+      throw error;
+    }
+
+    await fetchRecords();
   };
 
-  const deleteRecord = (id: string) => {
-    saveRecords(records.filter((r) => r.id !== id));
+  const deleteRecord = async (id: string) => {
+    const { error } = await supabase
+      .from('pawn_records')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting record:', error);
+      throw error;
+    }
+
+    await fetchRecords();
   };
 
-  const redeemRecord = (id: string) => {
-    const newRecords = records.map((r) =>
-      r.id === id
-        ? { ...r, status: 'Redeemed' as const, redeemedDate: new Date().toISOString().split('T')[0] }
-        : r
-    );
-    saveRecords(newRecords);
+  const redeemRecord = async (id: string) => {
+    const { error } = await supabase
+      .from('pawn_records')
+      .update({
+        status: 'Redeemed' as DbPawnStatus,
+        redeemed_date: new Date().toISOString().split('T')[0],
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error redeeming record:', error);
+      throw error;
+    }
+
+    await fetchRecords();
   };
 
   const getStats = (): DashboardStats => {
@@ -136,5 +203,6 @@ export function usePawnStore() {
     redeemRecord,
     getStats,
     searchRecords,
+    refetch: fetchRecords,
   };
 }
