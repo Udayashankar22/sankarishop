@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePawnStore } from '@/hooks/usePawnStore';
+import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/layout/Header';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { PawnTable } from '@/components/pawn/PawnTable';
@@ -10,13 +11,11 @@ import { RedeemModal } from '@/components/pawn/RedeemModal';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { Button } from '@/components/ui/button';
 import { PawnRecord } from '@/types/pawn';
-import { Plus, Gem } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('ravi_shop_logged_in') === 'true';
-  });
+  const { user, isLoading: authLoading, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'dashboard' | 'records' | 'calculator'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PawnRecord | null>(null);
@@ -24,50 +23,72 @@ const Index = () => {
   const [redeemingRecord, setRedeemingRecord] = useState<PawnRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { records, addRecord, updateRecord, deleteRecord, redeemRecord, getStats } = usePawnStore();
+  const { records, isLoading, addRecord, updateRecord, deleteRecord, redeemRecord, getStats } = usePawnStore();
 
-  const handleLogin = () => {
-    localStorage.setItem('ravi_shop_logged_in', 'true');
-    setIsLoggedIn(true);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('ravi_shop_logged_in');
-    setIsLoggedIn(false);
-  };
-
-  if (!isLoggedIn) {
-    return <LoginPage onLogin={handleLogin} />;
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="h-8 w-8 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  const handleAddRecord = (data: Omit<PawnRecord, 'id'>) => {
-    addRecord(data);
-    setShowForm(false);
-    toast.success('Pawn record created successfully!');
+  if (!user) {
+    return <LoginPage />;
+  }
+
+  const handleAddRecord = async (data: Omit<PawnRecord, 'id'>) => {
+    try {
+      await addRecord(data);
+      setShowForm(false);
+      toast.success('Pawn record created successfully!');
+    } catch (error) {
+      toast.error('Failed to create record. Please try again.');
+    }
   };
 
-  const handleEditRecord = (data: Omit<PawnRecord, 'id'>) => {
+  const handleEditRecord = async (data: Omit<PawnRecord, 'id'>) => {
     if (editingRecord) {
-      updateRecord(editingRecord.id, data);
-      setEditingRecord(null);
-      toast.success('Pawn record updated successfully!');
+      try {
+        await updateRecord(editingRecord.id, data);
+        setEditingRecord(null);
+        toast.success('Pawn record updated successfully!');
+      } catch (error) {
+        toast.error('Failed to update record. Please try again.');
+      }
     }
   };
 
-  const handleDeleteRecord = (id: string) => {
+  const handleDeleteRecord = async (id: string) => {
     if (confirm('Are you sure you want to delete this record?')) {
-      deleteRecord(id);
-      toast.success('Record deleted successfully!');
+      try {
+        await deleteRecord(id);
+        toast.success('Record deleted successfully!');
+      } catch (error) {
+        toast.error('Failed to delete record. Please try again.');
+      }
     }
   };
 
-  const handleRedeemConfirm = () => {
+  const handleRedeemConfirm = async () => {
     if (redeemingRecord) {
-      redeemRecord(redeemingRecord.id);
-      setRedeemingRecord(null);
-      setViewingRecord(null);
-      toast.success('Jewellery redeemed successfully!');
+      try {
+        await redeemRecord(redeemingRecord.id);
+        setRedeemingRecord(null);
+        setViewingRecord(null);
+        toast.success('Jewellery redeemed successfully!');
+      } catch (error) {
+        toast.error('Failed to redeem record. Please try again.');
+      }
     }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success('Signed out successfully!');
   };
 
   const stats = getStats();
@@ -115,18 +136,25 @@ const Index = () => {
                   View All
                 </Button>
               </div>
-              <PawnTable
-                records={records.slice(0, 5)}
-                onEdit={(record) => setEditingRecord(record)}
-                onDelete={handleDeleteRecord}
-                onRedeem={(id) => {
-                  const record = records.find((r) => r.id === id);
-                  if (record) setRedeemingRecord(record);
-                }}
-                onView={(record) => setViewingRecord(record)}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-              />
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="h-6 w-6 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                  <p className="text-muted-foreground">Loading records...</p>
+                </div>
+              ) : (
+                <PawnTable
+                  records={records.slice(0, 5)}
+                  onEdit={(record) => setEditingRecord(record)}
+                  onDelete={handleDeleteRecord}
+                  onRedeem={(id) => {
+                    const record = records.find((r) => r.id === id);
+                    if (record) setRedeemingRecord(record);
+                  }}
+                  onView={(record) => setViewingRecord(record)}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                />
+              )}
             </div>
           </div>
         )}
@@ -148,18 +176,25 @@ const Index = () => {
               </Button>
             </div>
 
-            <PawnTable
-              records={records}
-              onEdit={(record) => setEditingRecord(record)}
-              onDelete={handleDeleteRecord}
-              onRedeem={(id) => {
-                const record = records.find((r) => r.id === id);
-                if (record) setRedeemingRecord(record);
-              }}
-              onView={(record) => setViewingRecord(record)}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-            />
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="h-6 w-6 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                <p className="text-muted-foreground">Loading records...</p>
+              </div>
+            ) : (
+              <PawnTable
+                records={records}
+                onEdit={(record) => setEditingRecord(record)}
+                onDelete={handleDeleteRecord}
+                onRedeem={(id) => {
+                  const record = records.find((r) => r.id === id);
+                  if (record) setRedeemingRecord(record);
+                }}
+                onView={(record) => setViewingRecord(record)}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
+            )}
           </div>
         )}
 
