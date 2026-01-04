@@ -15,7 +15,7 @@ import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Index = () => {
-  const { user, isLoading: authLoading, signOut } = useAuth();
+  const { isAuthenticated, isLoading: authLoading, signOut } = useAuth();
   const [currentView, setCurrentView] = useState<'dashboard' | 'records' | 'calculator'>('dashboard');
   const [showForm, setShowForm] = useState(false);
   const [editingRecord, setEditingRecord] = useState<PawnRecord | null>(null);
@@ -36,7 +36,7 @@ const Index = () => {
     );
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <LoginPage />;
   }
 
