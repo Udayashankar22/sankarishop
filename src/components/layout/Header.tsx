@@ -24,8 +24,8 @@ export function Header({ currentView, onViewChange, onLogout }: HeaderProps) {
               <Gem className="h-6 w-6 text-gold" />
             </div>
             <div>
-              <h1 className="text-xl font-serif font-bold gradient-gold-text">
-                Ravi Shop
+            <h1 className="text-lg font-serif font-bold gradient-gold-text">
+                SREE SUBALAKSHMI BANKER
               </h1>
               <p className="text-xs text-muted-foreground hidden sm:block">
                 Pawn Broker Management
