@@ -7,6 +7,9 @@ import { calculateInterest } from '@/lib/pawnCalculations';
 type DbJewelleryType = 'Gold Ring' | 'Gold Chain' | 'Gold Bangle' | 'Gold Earrings' | 'Gold Necklace' | 'Silver Ring' | 'Silver Chain' | 'Silver Bangle' | 'Diamond Ring' | 'Diamond Necklace' | 'Other';
 type DbPawnStatus = 'Active' | 'Redeemed';
 
+// Fixed user ID for the shop owner
+const SHOP_USER_ID = 'ravisankari-shop-owner';
+
 interface DbPawnRecord {
   id: string;
   user_id: string;
@@ -44,12 +47,12 @@ function mapDbToRecord(db: DbPawnRecord): PawnRecord {
 }
 
 export function usePawnStore() {
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [records, setRecords] = useState<PawnRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchRecords = async () => {
-    if (!user) {
+    if (!isAuthenticated) {
       setRecords([]);
       setIsLoading(false);
       return;
@@ -71,15 +74,15 @@ export function usePawnStore() {
 
   useEffect(() => {
     fetchRecords();
-  }, [user]);
+  }, [isAuthenticated]);
 
   const addRecord = async (record: Omit<PawnRecord, 'id'>) => {
-    if (!user) return null;
+    if (!isAuthenticated) return null;
 
     const { data, error } = await supabase
       .from('pawn_records')
       .insert({
-        user_id: user.id,
+        user_id: SHOP_USER_ID,
         serial_number: record.serialNumber,
         customer_name: record.name,
         phone_number: record.phoneNumber,
