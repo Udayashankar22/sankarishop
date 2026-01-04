@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PawnRecord, JewelleryType } from '@/types/pawn';
-import { generateSerialNumber } from '@/lib/pawnCalculations';
+
 import { X, Gem } from 'lucide-react';
 
 const jewelleryTypes: JewelleryType[] = [
@@ -30,7 +30,7 @@ interface PawnFormProps {
 
 export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
   const [formData, setFormData] = useState({
-    serialNumber: initialData?.serialNumber || generateSerialNumber(),
+    serialNumber: initialData?.serialNumber || '',
     name: initialData?.name || '',
     phoneNumber: initialData?.phoneNumber || '',
     address: initialData?.address || '',
@@ -85,8 +85,10 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
             <Input
               id="serialNumber"
               value={formData.serialNumber}
-              readOnly
-              className="bg-secondary/50 font-mono text-gold"
+              onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+              placeholder="Enter serial number"
+              className="font-mono"
+              required
             />
           </div>
 
