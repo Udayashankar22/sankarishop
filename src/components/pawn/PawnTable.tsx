@@ -8,7 +8,7 @@ import {
   Edit, 
   Trash2, 
   CheckCircle, 
-  Eye,
+  
   Filter
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -18,7 +18,7 @@ interface PawnTableProps {
   onEdit: (record: PawnRecord) => void;
   onDelete: (id: string) => void;
   onRedeem: (id: string) => void;
-  onView: (record: PawnRecord) => void;
+  
   searchQuery: string;
   onSearchChange: (query: string) => void;
 }
@@ -28,7 +28,7 @@ export function PawnTable({
   onEdit,
   onDelete,
   onRedeem,
-  onView,
+  
   searchQuery,
   onSearchChange,
 }: PawnTableProps) {
@@ -151,14 +151,6 @@ export function PawnTable({
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onView(record)}
-                          className="h-8 w-8"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
                         {record.status === 'Active' && (
                           <>
                             <Button

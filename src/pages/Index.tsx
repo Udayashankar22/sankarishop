@@ -150,7 +150,6 @@ const Index = () => {
                     const record = records.find((r) => r.id === id);
                     if (record) setRedeemingRecord(record);
                   }}
-                  onView={(record) => setViewingRecord(record)}
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                 />
@@ -190,7 +189,7 @@ const Index = () => {
                   const record = records.find((r) => r.id === id);
                   if (record) setRedeemingRecord(record);
                 }}
-                onView={(record) => setViewingRecord(record)}
+                
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               />
