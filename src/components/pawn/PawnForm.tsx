@@ -29,13 +29,16 @@ interface PawnFormProps {
 }
 
 export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
+  const isCustomType = initialData?.jewelleryType && !jewelleryTypes.includes(initialData.jewelleryType);
+  
   const [formData, setFormData] = useState({
     serialNumber: initialData?.serialNumber || '',
     name: initialData?.name || '',
     phoneNumber: initialData?.phoneNumber || '',
     address: initialData?.address || '',
     pawnDate: initialData?.pawnDate || new Date().toISOString().split('T')[0],
-    jewelleryType: initialData?.jewelleryType || 'Gold Ring' as JewelleryType,
+    jewelleryType: isCustomType ? 'Other' : (initialData?.jewelleryType || 'Gold Ring') as JewelleryType,
+    customJewelleryType: isCustomType ? initialData?.jewelleryType : '',
     jewelleryWeight: initialData?.jewelleryWeight?.toString() || '',
     pawnAmount: initialData?.pawnAmount?.toString() || '',
     interestRate: initialData?.interestRate?.toString() || '2',
@@ -44,13 +47,17 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const finalJewelleryType = formData.jewelleryType === 'Other' && formData.customJewelleryType
+      ? formData.customJewelleryType
+      : formData.jewelleryType;
+    
     onSubmit({
       serialNumber: formData.serialNumber,
       name: formData.name,
       phoneNumber: formData.phoneNumber,
       address: formData.address,
       pawnDate: formData.pawnDate,
-      jewelleryType: formData.jewelleryType as JewelleryType,
+      jewelleryType: finalJewelleryType as JewelleryType,
       jewelleryWeight: parseFloat(formData.jewelleryWeight),
       pawnAmount: parseFloat(formData.pawnAmount),
       interestRate: parseFloat(formData.interestRate),
@@ -134,7 +141,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               <Label htmlFor="jewelleryType" className="text-foreground">Jewellery Type *</Label>
               <Select
                 value={formData.jewelleryType}
-                onValueChange={(value: string) => setFormData({ ...formData, jewelleryType: value as JewelleryType })}
+                onValueChange={(value: string) => setFormData({ ...formData, jewelleryType: value as JewelleryType, customJewelleryType: value === 'Other' ? formData.customJewelleryType : '' })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
@@ -161,6 +168,20 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               />
             </div>
           </div>
+
+          {/* Custom Jewellery Type Input */}
+          {formData.jewelleryType === 'Other' && (
+            <div className="space-y-2">
+              <Label htmlFor="customJewelleryType" className="text-foreground">Custom Jewellery Type *</Label>
+              <Input
+                id="customJewelleryType"
+                value={formData.customJewelleryType}
+                onChange={(e) => setFormData({ ...formData, customJewelleryType: e.target.value })}
+                placeholder="Enter custom jewellery type"
+                required
+              />
+            </div>
+          )}
 
           {/* Pawn Details */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
