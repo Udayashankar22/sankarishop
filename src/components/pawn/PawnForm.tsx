@@ -372,7 +372,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 onChange={(e) => handleChange('interestRate', e.target.value)}
                 onBlur={() => handleBlur('interestRate')}
                 placeholder="Monthly rate"
-                className={errors.interestRate && touched.interestRate ? 'border-destructive' : ''}
+                className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.interestRate && touched.interestRate ? 'border-destructive' : ''}`}
               />
               {touched.interestRate && <ErrorMessage error={errors.interestRate} />}
             </div>
