@@ -28,6 +28,19 @@ interface PawnFormProps {
   initialData?: PawnRecord;
 }
 
+interface FormErrors {
+  serialNumber?: string;
+  name?: string;
+  phoneNumber?: string;
+  address?: string;
+  pawnDate?: string;
+  jewelleryType?: string;
+  customJewelleryType?: string;
+  jewelleryWeight?: string;
+  pawnAmount?: string;
+  interestRate?: string;
+}
+
 export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
   const isCustomType = initialData?.jewelleryType && !jewelleryTypes.includes(initialData.jewelleryType);
   
@@ -45,17 +58,136 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     status: initialData?.status || 'Active' as const,
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  const validateField = (name: string, value: string): string | undefined => {
+    switch (name) {
+      case 'serialNumber':
+        if (!value.trim()) return 'Serial number is required';
+        if (value.trim().length < 2) return 'Serial number must be at least 2 characters';
+        return undefined;
+
+      case 'name':
+        if (!value.trim()) return 'Customer name is required';
+        if (value.trim().length < 2) return 'Name must be at least 2 characters';
+        if (value.trim().length > 100) return 'Name must be less than 100 characters';
+        return undefined;
+
+      case 'phoneNumber':
+        if (!value.trim()) return 'Phone number is required';
+        const phoneRegex = /^[0-9]{10}$/;
+        if (!phoneRegex.test(value.replace(/\s/g, ''))) return 'Enter a valid 10-digit phone number';
+        return undefined;
+
+      case 'address':
+        if (value && value.length > 500) return 'Address must be less than 500 characters';
+        return undefined;
+
+      case 'pawnDate':
+        if (!value) return 'Pawn date is required';
+        const selectedDate = new Date(value);
+        const today = new Date();
+        today.setHours(23, 59, 59, 999);
+        if (selectedDate > today) return 'Pawn date cannot be in the future';
+        return undefined;
+
+      case 'customJewelleryType':
+        if (formData.jewelleryType === 'Other' && !value.trim()) return 'Custom jewellery type is required';
+        if (value && value.trim().length > 50) return 'Type must be less than 50 characters';
+        return undefined;
+
+      case 'jewelleryWeight':
+        if (!value) return 'Weight is required';
+        const weight = parseFloat(value);
+        if (isNaN(weight) || weight <= 0) return 'Enter a valid weight greater than 0';
+        if (weight > 10000) return 'Weight seems too high. Please verify';
+        return undefined;
+
+      case 'pawnAmount':
+        if (!value) return 'Pawn amount is required';
+        const amount = parseFloat(value);
+        if (isNaN(amount) || amount <= 0) return 'Enter a valid amount greater than 0';
+        if (amount > 100000000) return 'Amount seems too high. Please verify';
+        return undefined;
+
+      case 'interestRate':
+        if (!value) return 'Interest rate is required';
+        const rate = parseFloat(value);
+        if (isNaN(rate) || rate < 0) return 'Enter a valid interest rate';
+        if (rate > 100) return 'Interest rate cannot exceed 100%';
+        return undefined;
+
+      default:
+        return undefined;
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    
+    newErrors.serialNumber = validateField('serialNumber', formData.serialNumber);
+    newErrors.name = validateField('name', formData.name);
+    newErrors.phoneNumber = validateField('phoneNumber', formData.phoneNumber);
+    newErrors.address = validateField('address', formData.address);
+    newErrors.pawnDate = validateField('pawnDate', formData.pawnDate);
+    newErrors.customJewelleryType = validateField('customJewelleryType', formData.customJewelleryType || '');
+    newErrors.jewelleryWeight = validateField('jewelleryWeight', formData.jewelleryWeight);
+    newErrors.pawnAmount = validateField('pawnAmount', formData.pawnAmount);
+    newErrors.interestRate = validateField('interestRate', formData.interestRate);
+
+    // Remove undefined errors
+    const filteredErrors: FormErrors = {};
+    Object.keys(newErrors).forEach((key) => {
+      const errorKey = key as keyof FormErrors;
+      if (newErrors[errorKey]) {
+        filteredErrors[errorKey] = newErrors[errorKey];
+      }
+    });
+
+    setErrors(filteredErrors);
+    return Object.keys(filteredErrors).length === 0;
+  };
+
+  const handleBlur = (field: string) => {
+    setTouched({ ...touched, [field]: true });
+    const value = formData[field as keyof typeof formData];
+    const stringValue = typeof value === 'string' ? value : String(value ?? '');
+    const error = validateField(field, stringValue);
+    setErrors({ ...errors, [field]: error });
+  };
+
+  const handleChange = (field: string, value: string) => {
+    setFormData({ ...formData, [field]: value });
+    if (touched[field]) {
+      const error = validateField(field, value);
+      setErrors({ ...errors, [field]: error });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Mark all fields as touched
+    const allTouched: Record<string, boolean> = {};
+    Object.keys(formData).forEach((key) => {
+      allTouched[key] = true;
+    });
+    setTouched(allTouched);
+
+    if (!validateForm()) {
+      return;
+    }
+
     const finalJewelleryType = formData.jewelleryType === 'Other' && formData.customJewelleryType
       ? formData.customJewelleryType
       : formData.jewelleryType;
     
     onSubmit({
-      serialNumber: formData.serialNumber,
-      name: formData.name,
-      phoneNumber: formData.phoneNumber,
-      address: formData.address,
+      serialNumber: formData.serialNumber.trim(),
+      name: formData.name.trim(),
+      phoneNumber: formData.phoneNumber.trim(),
+      address: formData.address.trim(),
       pawnDate: formData.pawnDate,
       jewelleryType: finalJewelleryType as JewelleryType,
       jewelleryWeight: parseFloat(formData.jewelleryWeight),
@@ -63,6 +195,11 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
       interestRate: parseFloat(formData.interestRate),
       status: formData.status,
     });
+  };
+
+  const ErrorMessage = ({ error }: { error?: string }) => {
+    if (!error) return null;
+    return <p className="text-sm text-destructive mt-1">{error}</p>;
   };
 
   return (
@@ -88,15 +225,16 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Serial Number */}
           <div className="space-y-2">
-            <Label htmlFor="serialNumber" className="text-foreground">Serial Number</Label>
+            <Label htmlFor="serialNumber" className="text-foreground">Serial Number *</Label>
             <Input
               id="serialNumber"
               value={formData.serialNumber}
-              onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
+              onChange={(e) => handleChange('serialNumber', e.target.value)}
+              onBlur={() => handleBlur('serialNumber')}
               placeholder="Enter serial number"
-              className="font-mono"
-              required
+              className={`font-mono ${errors.serialNumber && touched.serialNumber ? 'border-destructive' : ''}`}
             />
+            {touched.serialNumber && <ErrorMessage error={errors.serialNumber} />}
           </div>
 
           {/* Customer Details */}
@@ -106,10 +244,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => handleChange('name', e.target.value)}
+                onBlur={() => handleBlur('name')}
                 placeholder="Enter customer name"
-                required
+                className={errors.name && touched.name ? 'border-destructive' : ''}
               />
+              {touched.name && <ErrorMessage error={errors.name} />}
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-foreground">Phone Number *</Label>
@@ -117,10 +257,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 id="phone"
                 type="tel"
                 value={formData.phoneNumber}
-                onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                placeholder="Enter phone number"
-                required
+                onChange={(e) => handleChange('phoneNumber', e.target.value)}
+                onBlur={() => handleBlur('phoneNumber')}
+                placeholder="Enter 10-digit phone number"
+                className={errors.phoneNumber && touched.phoneNumber ? 'border-destructive' : ''}
               />
+              {touched.phoneNumber && <ErrorMessage error={errors.phoneNumber} />}
             </div>
           </div>
 
@@ -129,10 +271,13 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
             <Textarea
               id="address"
               value={formData.address}
-              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              onChange={(e) => handleChange('address', e.target.value)}
+              onBlur={() => handleBlur('address')}
               placeholder="Enter customer address"
               rows={2}
+              className={errors.address && touched.address ? 'border-destructive' : ''}
             />
+            {touched.address && <ErrorMessage error={errors.address} />}
           </div>
 
           {/* Jewellery Details */}
@@ -141,7 +286,10 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               <Label htmlFor="jewelleryType" className="text-foreground">Jewellery Type *</Label>
               <Select
                 value={formData.jewelleryType}
-                onValueChange={(value: string) => setFormData({ ...formData, jewelleryType: value as JewelleryType, customJewelleryType: value === 'Other' ? formData.customJewelleryType : '' })}
+                onValueChange={(value: string) => {
+                  setFormData({ ...formData, jewelleryType: value as JewelleryType, customJewelleryType: value === 'Other' ? formData.customJewelleryType : '' });
+                  setTouched({ ...touched, jewelleryType: true });
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
@@ -162,10 +310,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 type="number"
                 step="0.01"
                 value={formData.jewelleryWeight}
-                onChange={(e) => setFormData({ ...formData, jewelleryWeight: e.target.value })}
+                onChange={(e) => handleChange('jewelleryWeight', e.target.value)}
+                onBlur={() => handleBlur('jewelleryWeight')}
                 placeholder="Enter weight"
-                required
+                className={errors.jewelleryWeight && touched.jewelleryWeight ? 'border-destructive' : ''}
               />
+              {touched.jewelleryWeight && <ErrorMessage error={errors.jewelleryWeight} />}
             </div>
           </div>
 
@@ -176,10 +326,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               <Input
                 id="customJewelleryType"
                 value={formData.customJewelleryType}
-                onChange={(e) => setFormData({ ...formData, customJewelleryType: e.target.value })}
+                onChange={(e) => handleChange('customJewelleryType', e.target.value)}
+                onBlur={() => handleBlur('customJewelleryType')}
                 placeholder="Enter custom jewellery type"
-                required
+                className={errors.customJewelleryType && touched.customJewelleryType ? 'border-destructive' : ''}
               />
+              {touched.customJewelleryType && <ErrorMessage error={errors.customJewelleryType} />}
             </div>
           )}
 
@@ -191,9 +343,11 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 id="pawnDate"
                 type="date"
                 value={formData.pawnDate}
-                onChange={(e) => setFormData({ ...formData, pawnDate: e.target.value })}
-                required
+                onChange={(e) => handleChange('pawnDate', e.target.value)}
+                onBlur={() => handleBlur('pawnDate')}
+                className={errors.pawnDate && touched.pawnDate ? 'border-destructive' : ''}
               />
+              {touched.pawnDate && <ErrorMessage error={errors.pawnDate} />}
             </div>
             <div className="space-y-2">
               <Label htmlFor="amount" className="text-foreground">Pawn Amount (₹) *</Label>
@@ -201,10 +355,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 id="amount"
                 type="number"
                 value={formData.pawnAmount}
-                onChange={(e) => setFormData({ ...formData, pawnAmount: e.target.value })}
+                onChange={(e) => handleChange('pawnAmount', e.target.value)}
+                onBlur={() => handleBlur('pawnAmount')}
                 placeholder="Enter amount"
-                required
+                className={errors.pawnAmount && touched.pawnAmount ? 'border-destructive' : ''}
               />
+              {touched.pawnAmount && <ErrorMessage error={errors.pawnAmount} />}
             </div>
             <div className="space-y-2">
               <Label htmlFor="rate" className="text-foreground">Interest Rate (%) *</Label>
@@ -213,10 +369,12 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 type="number"
                 step="0.1"
                 value={formData.interestRate}
-                onChange={(e) => setFormData({ ...formData, interestRate: e.target.value })}
+                onChange={(e) => handleChange('interestRate', e.target.value)}
+                onBlur={() => handleBlur('interestRate')}
                 placeholder="Monthly rate"
-                required
+                className={errors.interestRate && touched.interestRate ? 'border-destructive' : ''}
               />
+              {touched.interestRate && <ErrorMessage error={errors.interestRate} />}
             </div>
           </div>
 
