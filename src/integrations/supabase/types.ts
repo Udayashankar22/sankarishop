@@ -21,7 +21,7 @@ export type Database = {
           customer_name: string
           id: string
           interest_rate: number
-          jewellery_type: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_type: string
           jewellery_weight: number
           pawn_amount: number
           pawn_date: string
@@ -38,7 +38,7 @@ export type Database = {
           customer_name: string
           id?: string
           interest_rate: number
-          jewellery_type: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_type: string
           jewellery_weight: number
           pawn_amount: number
           pawn_date: string
@@ -55,7 +55,7 @@ export type Database = {
           customer_name?: string
           id?: string
           interest_rate?: number
-          jewellery_type?: Database["public"]["Enums"]["jewellery_type"]
+          jewellery_type?: string
           jewellery_weight?: number
           pawn_amount?: number
           pawn_date?: string

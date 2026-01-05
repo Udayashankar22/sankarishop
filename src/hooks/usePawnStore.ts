@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { PawnRecord, DashboardStats, JewelleryType } from '@/types/pawn';
 import { calculateInterest } from '@/lib/pawnCalculations';
 
-type DbJewelleryType = 'Gold Ring' | 'Gold Chain' | 'Gold Bangle' | 'Gold Earrings' | 'Gold Necklace' | 'Silver Ring' | 'Silver Chain' | 'Silver Bangle' | 'Diamond Ring' | 'Diamond Necklace' | 'Other';
 type DbPawnStatus = 'Active' | 'Redeemed';
 
 // Fixed user ID for the shop owner
@@ -18,7 +17,7 @@ interface DbPawnRecord {
   phone_number: string;
   address: string;
   pawn_date: string;
-  jewellery_type: DbJewelleryType;
+  jewellery_type: string;
   jewellery_weight: number;
   pawn_amount: number;
   interest_rate: number;
@@ -88,7 +87,7 @@ export function usePawnStore() {
         phone_number: record.phoneNumber,
         address: record.address,
         pawn_date: record.pawnDate,
-        jewellery_type: record.jewelleryType as DbJewelleryType,
+        jewellery_type: record.jewelleryType,
         jewellery_weight: record.jewelleryWeight,
         pawn_amount: record.pawnAmount,
         interest_rate: record.interestRate,
