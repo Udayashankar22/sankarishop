@@ -345,7 +345,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 value={formData.pawnDate}
                 onChange={(e) => handleChange('pawnDate', e.target.value)}
                 onBlur={() => handleBlur('pawnDate')}
-                className={errors.pawnDate && touched.pawnDate ? 'border-destructive' : ''}
+                className={`[color-scheme:dark] ${errors.pawnDate && touched.pawnDate ? 'border-destructive' : ''}`}
               />
               {touched.pawnDate && <ErrorMessage error={errors.pawnDate} />}
             </div>
@@ -358,7 +358,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                 onChange={(e) => handleChange('pawnAmount', e.target.value)}
                 onBlur={() => handleBlur('pawnAmount')}
                 placeholder="Enter amount"
-                className={errors.pawnAmount && touched.pawnAmount ? 'border-destructive' : ''}
+                className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.pawnAmount && touched.pawnAmount ? 'border-destructive' : ''}`}
               />
               {touched.pawnAmount && <ErrorMessage error={errors.pawnAmount} />}
             </div>
