@@ -179,6 +179,7 @@ export function usePawnStore() {
     }, 0);
 
     return {
+      totalEntries: records.length,
       totalActivePawns: activeRecords.length,
       totalRedeemedPawns: redeemedRecords.length,
       totalPawnAmount: activeRecords.reduce((sum, r) => sum + r.pawnAmount, 0),
