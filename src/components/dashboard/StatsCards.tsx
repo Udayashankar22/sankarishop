@@ -1,4 +1,4 @@
-import { Gem, TrendingUp, Archive, IndianRupee } from 'lucide-react';
+import { Gem, TrendingUp, Archive, IndianRupee, ClipboardList } from 'lucide-react';
 import { DashboardStats } from '@/types/pawn';
 import { formatCurrency } from '@/lib/pawnCalculations';
 
@@ -9,6 +9,13 @@ interface StatsCardsProps {
 export function StatsCards({ stats }: StatsCardsProps) {
   const cards = [
     {
+      title: 'Total Entries',
+      value: stats.totalEntries,
+      icon: ClipboardList,
+      color: 'text-primary',
+      bgColor: 'bg-primary/10',
+    },
+    {
       title: 'Active Pawns',
       value: stats.totalActivePawns,
       icon: Gem,
@@ -16,18 +23,18 @@ export function StatsCards({ stats }: StatsCardsProps) {
       bgColor: 'bg-gold/10',
     },
     {
-      title: 'Total Pawn Amount',
-      value: formatCurrency(stats.totalPawnAmount),
-      icon: IndianRupee,
-      color: 'text-gold-light',
-      bgColor: 'bg-gold-light/10',
-    },
-    {
       title: 'Redeemed Pawns',
       value: stats.totalRedeemedPawns,
       icon: Archive,
       color: 'text-success',
       bgColor: 'bg-success/10',
+    },
+    {
+      title: 'Total Pawn Amount',
+      value: formatCurrency(stats.totalPawnAmount),
+      icon: IndianRupee,
+      color: 'text-gold-light',
+      bgColor: 'bg-gold-light/10',
     },
     {
       title: 'Interest Earned',
@@ -39,7 +46,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
       {cards.map((card, index) => (
         <div
           key={card.title}

@@ -15,6 +15,7 @@ export interface PawnRecord {
 }
 
 export interface DashboardStats {
+  totalEntries: number;
   totalActivePawns: number;
   totalRedeemedPawns: number;
   totalPawnAmount: number;
