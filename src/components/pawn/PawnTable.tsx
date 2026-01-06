@@ -48,11 +48,30 @@ export function PawnTable({
       record.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.phoneNumber.includes(searchQuery);
     
-    // Date range filter
+    // Date range filter - normalize dates to compare only date part (ignore time)
     const recordDate = new Date(record.pawnDate);
-    const matchesDateRange = 
-      (!startDate || recordDate >= startDate) && 
-      (!endDate || recordDate <= endDate);
+    recordDate.setHours(0, 0, 0, 0);
+    
+    let matchesDateRange = true;
+    
+    if (startDate && endDate) {
+      // Both dates selected - filter between range
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      matchesDateRange = recordDate >= start && recordDate <= end;
+    } else if (startDate && !endDate) {
+      // Only start date - filter exact date
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      matchesDateRange = recordDate.getTime() === start.getTime();
+    } else if (!startDate && endDate) {
+      // Only end date - filter exact date
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+      matchesDateRange = recordDate.getTime() === end.getTime();
+    }
     
     return matchesStatus && matchesSearch && matchesDateRange;
   });
