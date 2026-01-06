@@ -8,10 +8,15 @@ import {
   Edit, 
   Trash2, 
   CheckCircle, 
-  
-  Filter
+  Filter,
+  CalendarIcon,
+  X
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface PawnTableProps {
   records: PawnRecord[];
@@ -33,6 +38,8 @@ export function PawnTable({
   onSearchChange,
 }: PawnTableProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
+  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
 
   const filteredRecords = records.filter((record) => {
     const matchesStatus = statusFilter === 'all' || record.status.toLowerCase() === statusFilter;
@@ -40,8 +47,20 @@ export function PawnTable({
       record.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       record.phoneNumber.includes(searchQuery);
-    return matchesStatus && matchesSearch;
+    
+    // Date range filter
+    const recordDate = new Date(record.pawnDate);
+    const matchesDateRange = 
+      (!startDate || recordDate >= startDate) && 
+      (!endDate || recordDate <= endDate);
+    
+    return matchesStatus && matchesSearch && matchesDateRange;
   });
+
+  const clearDateFilter = () => {
+    setStartDate(undefined);
+    setEndDate(undefined);
+  };
 
   return (
     <div className="glass-card rounded-2xl gold-border overflow-hidden animate-fade-in">
@@ -57,7 +76,68 @@ export function PawnTable({
               className="pl-10"
             />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Date Range Filter */}
+            <div className="flex items-center gap-1">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[130px] justify-start text-left font-normal",
+                      !startDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {startDate ? format(startDate, "dd/MM/yyyy") : "From"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={startDate}
+                    onSelect={setStartDate}
+                    initialFocus
+                    className="p-3 pointer-events-auto bg-popover"
+                  />
+                </PopoverContent>
+              </Popover>
+              <span className="text-muted-foreground">-</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-[130px] justify-start text-left font-normal",
+                      !endDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? format(endDate, "dd/MM/yyyy") : "To"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate}
+                    onSelect={setEndDate}
+                    initialFocus
+                    className="p-3 pointer-events-auto bg-popover"
+                  />
+                </PopoverContent>
+              </Popover>
+              {(startDate || endDate) && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearDateFilter}
+                  className="h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[140px]">
