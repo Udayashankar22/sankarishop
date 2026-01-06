@@ -116,6 +116,7 @@ export function PawnTable({
                     mode="single"
                     selected={startDate}
                     onSelect={setStartDate}
+                    defaultMonth={startDate || new Date()}
                     initialFocus
                     className="p-3 pointer-events-auto bg-popover"
                   />
@@ -140,6 +141,7 @@ export function PawnTable({
                     mode="single"
                     selected={endDate}
                     onSelect={setEndDate}
+                    defaultMonth={endDate || new Date()}
                     initialFocus
                     className="p-3 pointer-events-auto bg-popover"
                   />
