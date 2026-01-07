@@ -8,9 +8,10 @@ import { PawnForm } from '@/components/pawn/PawnForm';
 import { PawnDetailsModal } from '@/components/pawn/PawnDetailsModal';
 import { InterestCalculator } from '@/components/pawn/InterestCalculator';
 import { RedeemModal } from '@/components/pawn/RedeemModal';
+import { StorageLocationModal } from '@/components/pawn/StorageLocationModal';
 import { LoginPage } from '@/components/auth/LoginPage';
 import { Button } from '@/components/ui/button';
-import { PawnRecord } from '@/types/pawn';
+import { PawnRecord, StorageLocation } from '@/types/pawn';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,6 +22,7 @@ const Index = () => {
   const [editingRecord, setEditingRecord] = useState<PawnRecord | null>(null);
   const [viewingRecord, setViewingRecord] = useState<PawnRecord | null>(null);
   const [redeemingRecord, setRedeemingRecord] = useState<PawnRecord | null>(null);
+  const [editingStorageRecord, setEditingStorageRecord] = useState<PawnRecord | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
 
   const { records, isLoading, addRecord, updateRecord, deleteRecord, redeemRecord, getStats } = usePawnStore();
@@ -91,6 +93,20 @@ const Index = () => {
     toast.success('Signed out successfully!');
   };
 
+  const handleUpdateStorage = async (
+    id: string, 
+    storageLocation: StorageLocation | undefined, 
+    storageSerialNumber: string | undefined
+  ) => {
+    try {
+      await updateRecord(id, { storageLocation, storageSerialNumber });
+      setEditingStorageRecord(null);
+      toast.success('Storage location updated successfully!');
+    } catch (error) {
+      toast.error('Failed to update storage location. Please try again.');
+    }
+  };
+
   const stats = getStats();
 
   return (
@@ -150,6 +166,7 @@ const Index = () => {
                     const record = records.find((r) => r.id === id);
                     if (record) setRedeemingRecord(record);
                   }}
+                  onEditStorage={(record) => setEditingStorageRecord(record)}
                   searchQuery={searchQuery}
                   onSearchChange={setSearchQuery}
                 />
@@ -189,7 +206,7 @@ const Index = () => {
                   const record = records.find((r) => r.id === id);
                   if (record) setRedeemingRecord(record);
                 }}
-                
+                onEditStorage={(record) => setEditingStorageRecord(record)}
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
               />
@@ -243,6 +260,14 @@ const Index = () => {
           record={redeemingRecord}
           onConfirm={handleRedeemConfirm}
           onClose={() => setRedeemingRecord(null)}
+        />
+      )}
+
+      {editingStorageRecord && (
+        <StorageLocationModal
+          record={editingStorageRecord}
+          onSubmit={handleUpdateStorage}
+          onClose={() => setEditingStorageRecord(null)}
         />
       )}
     </div>

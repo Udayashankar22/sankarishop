@@ -1,3 +1,5 @@
+export type StorageLocation = 'Locker' | 'GRS' | 'Bank';
+
 export interface PawnRecord {
   id: string;
   serialNumber: string;
@@ -12,6 +14,8 @@ export interface PawnRecord {
   status: 'Active' | 'Redeemed';
   redeemedDate?: string;
   userId?: string;
+  storageLocation?: StorageLocation;
+  storageSerialNumber?: string;
 }
 
 export interface DashboardStats {

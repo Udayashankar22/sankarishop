@@ -10,7 +10,8 @@ import {
   CheckCircle, 
   Filter,
   CalendarIcon,
-  X
+  X,
+  MapPin
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -23,6 +24,7 @@ interface PawnTableProps {
   onEdit: (record: PawnRecord) => void;
   onDelete: (id: string) => void;
   onRedeem: (id: string) => void;
+  onEditStorage?: (record: PawnRecord) => void;
   
   searchQuery: string;
   onSearchChange: (query: string) => void;
@@ -33,6 +35,7 @@ export function PawnTable({
   onEdit,
   onDelete,
   onRedeem,
+  onEditStorage,
   
   searchQuery,
   onSearchChange,
@@ -184,6 +187,7 @@ export function PawnTable({
               <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Jewellery</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Amount</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Interest</th>
+              <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Storage</th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-muted-foreground">Status</th>
               <th className="px-4 py-3 text-center text-sm font-semibold text-muted-foreground">Actions</th>
             </tr>
@@ -191,7 +195,7 @@ export function PawnTable({
           <tbody>
             {filteredRecords.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                <td colSpan={8} className="px-4 py-12 text-center text-muted-foreground">
                   No pawn records found
                 </td>
               </tr>
@@ -240,6 +244,32 @@ export function PawnTable({
                       </div>
                     </td>
                     <td className="px-4 py-4">
+                      {record.storageLocation ? (
+                        <div 
+                          className="cursor-pointer hover:bg-secondary/50 rounded p-1 -m-1 transition-colors"
+                          onClick={() => onEditStorage?.(record)}
+                          title="Click to edit storage location"
+                        >
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-3 w-3 text-gold" />
+                            <span className="font-medium text-foreground">
+                              {record.storageLocation === 'Locker' ? 'Locker (L)' : record.storageLocation}
+                            </span>
+                          </div>
+                          {record.storageSerialNumber && (
+                            <p className="text-sm text-muted-foreground">{record.storageSerialNumber}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => onEditStorage?.(record)}
+                          className="text-sm text-muted-foreground hover:text-gold transition-colors"
+                        >
+                          + Add location
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">
                       <span
                         className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                           record.status === 'Active'
@@ -259,6 +289,7 @@ export function PawnTable({
                               size="icon"
                               onClick={() => onEdit(record)}
                               className="h-8 w-8"
+                              title="Edit record"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -267,6 +298,7 @@ export function PawnTable({
                               size="icon"
                               onClick={() => onRedeem(record.id)}
                               className="h-8 w-8 text-success hover:text-success"
+                              title="Redeem"
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
@@ -277,6 +309,7 @@ export function PawnTable({
                           size="icon"
                           onClick={() => onDelete(record.id)}
                           className="h-8 w-8 text-destructive hover:text-destructive"
+                          title="Delete"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
