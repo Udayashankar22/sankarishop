@@ -29,6 +29,8 @@ export type Database = {
           redeemed_date: string | null
           serial_number: string
           status: Database["public"]["Enums"]["pawn_status"]
+          storage_location: string | null
+          storage_serial_number: string | null
           updated_at: string
           user_id: string
         }
@@ -46,6 +48,8 @@ export type Database = {
           redeemed_date?: string | null
           serial_number: string
           status?: Database["public"]["Enums"]["pawn_status"]
+          storage_location?: string | null
+          storage_serial_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -63,6 +67,8 @@ export type Database = {
           redeemed_date?: string | null
           serial_number?: string
           status?: Database["public"]["Enums"]["pawn_status"]
+          storage_location?: string | null
+          storage_serial_number?: string | null
           updated_at?: string
           user_id?: string
         }

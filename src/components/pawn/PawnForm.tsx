@@ -4,9 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PawnRecord, JewelleryType } from '@/types/pawn';
+import { PawnRecord, JewelleryType, StorageLocation } from '@/types/pawn';
 
-import { X, Gem } from 'lucide-react';
+import { X, Gem, MapPin } from 'lucide-react';
+
+const storageLocations: StorageLocation[] = ['Locker', 'GRS', 'Bank'];
 
 const jewelleryTypes: JewelleryType[] = [
   'Gold Ring',
@@ -39,6 +41,7 @@ interface FormErrors {
   jewelleryWeight?: string;
   pawnAmount?: string;
   interestRate?: string;
+  storageSerialNumber?: string;
 }
 
 export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
@@ -56,6 +59,8 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     pawnAmount: initialData?.pawnAmount?.toString() || '',
     interestRate: initialData?.interestRate?.toString() || '2',
     status: initialData?.status || 'Active' as const,
+    storageLocation: (initialData?.storageLocation || '') as StorageLocation | '',
+    storageSerialNumber: initialData?.storageSerialNumber || '',
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -118,6 +123,13 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
         if (rate > 100) return 'Interest rate cannot exceed 100%';
         return undefined;
 
+      case 'storageSerialNumber':
+        if ((formData.storageLocation === 'GRS' || formData.storageLocation === 'Bank') && !value.trim()) {
+          return 'Storage serial number is required for GRS/Bank';
+        }
+        if (value && value.trim().length > 50) return 'Serial number must be less than 50 characters';
+        return undefined;
+
       default:
         return undefined;
     }
@@ -135,6 +147,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     newErrors.jewelleryWeight = validateField('jewelleryWeight', formData.jewelleryWeight);
     newErrors.pawnAmount = validateField('pawnAmount', formData.pawnAmount);
     newErrors.interestRate = validateField('interestRate', formData.interestRate);
+    newErrors.storageSerialNumber = validateField('storageSerialNumber', formData.storageSerialNumber);
 
     // Remove undefined errors
     const filteredErrors: FormErrors = {};
@@ -194,6 +207,8 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
       pawnAmount: parseFloat(formData.pawnAmount),
       interestRate: parseFloat(formData.interestRate),
       status: formData.status,
+      storageLocation: formData.storageLocation || undefined,
+      storageSerialNumber: formData.storageLocation === 'Locker' ? undefined : formData.storageSerialNumber.trim() || undefined,
     });
   };
 
@@ -376,6 +391,60 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               />
               {touched.interestRate && <ErrorMessage error={errors.interestRate} />}
             </div>
+          </div>
+
+          {/* Storage Location */}
+          <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-border">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="h-4 w-4 text-gold" />
+              <Label className="text-foreground font-medium">Storage Location</Label>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="storageLocation" className="text-foreground">Location</Label>
+                <Select
+                  value={formData.storageLocation}
+                  onValueChange={(value: string) => {
+                    setFormData({ 
+                      ...formData, 
+                      storageLocation: value as StorageLocation,
+                      storageSerialNumber: value === 'Locker' ? '' : formData.storageSerialNumber 
+                    });
+                    setTouched({ ...touched, storageLocation: true });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select storage location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {storageLocations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc === 'Locker' ? 'Locker (L)' : loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {(formData.storageLocation === 'GRS' || formData.storageLocation === 'Bank') && (
+                <div className="space-y-2">
+                  <Label htmlFor="storageSerialNumber" className="text-foreground">
+                    Storage Serial Number *
+                  </Label>
+                  <Input
+                    id="storageSerialNumber"
+                    value={formData.storageSerialNumber}
+                    onChange={(e) => handleChange('storageSerialNumber', e.target.value)}
+                    onBlur={() => handleBlur('storageSerialNumber')}
+                    placeholder={`Enter ${formData.storageLocation} serial number`}
+                    className={errors.storageSerialNumber && touched.storageSerialNumber ? 'border-destructive' : ''}
+                  />
+                  {touched.storageSerialNumber && <ErrorMessage error={errors.storageSerialNumber} />}
+                </div>
+              )}
+            </div>
+            {formData.storageLocation === 'Locker' && (
+              <p className="text-sm text-muted-foreground">No serial number required for Locker storage.</p>
+            )}
           </div>
 
           {/* Actions */}

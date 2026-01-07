@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { PawnRecord, DashboardStats, JewelleryType } from '@/types/pawn';
+import { PawnRecord, DashboardStats, JewelleryType, StorageLocation } from '@/types/pawn';
 import { calculateInterest } from '@/lib/pawnCalculations';
 
 type DbPawnStatus = 'Active' | 'Redeemed';
@@ -25,6 +25,8 @@ interface DbPawnRecord {
   redeemed_date: string | null;
   created_at: string;
   updated_at: string;
+  storage_location: string | null;
+  storage_serial_number: string | null;
 }
 
 function mapDbToRecord(db: DbPawnRecord): PawnRecord {
@@ -42,6 +44,8 @@ function mapDbToRecord(db: DbPawnRecord): PawnRecord {
     status: db.status,
     redeemedDate: db.redeemed_date || undefined,
     userId: db.user_id,
+    storageLocation: db.storage_location as StorageLocation | undefined,
+    storageSerialNumber: db.storage_serial_number || undefined,
   };
 }
 
@@ -92,6 +96,8 @@ export function usePawnStore() {
         pawn_amount: record.pawnAmount,
         interest_rate: record.interestRate,
         status: 'Active' as DbPawnStatus,
+        storage_location: record.storageLocation || null,
+        storage_serial_number: record.storageSerialNumber || null,
       })
       .select()
       .single();
@@ -119,6 +125,8 @@ export function usePawnStore() {
     if (updates.interestRate) updateData.interest_rate = updates.interestRate;
     if (updates.status) updateData.status = updates.status;
     if (updates.redeemedDate) updateData.redeemed_date = updates.redeemedDate;
+    if (updates.storageLocation !== undefined) updateData.storage_location = updates.storageLocation || null;
+    if (updates.storageSerialNumber !== undefined) updateData.storage_serial_number = updates.storageSerialNumber || null;
 
     const { error } = await supabase
       .from('pawn_records')
