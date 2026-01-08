@@ -23,6 +23,7 @@ export interface DashboardStats {
   totalActivePawns: number;
   totalRedeemedPawns: number;
   totalPawnAmount: number;
+  totalUpfrontInterest: number;
   totalInterestEarned: number;
 }
 

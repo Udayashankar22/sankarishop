@@ -176,14 +176,21 @@ export function usePawnStore() {
     const activeRecords = records.filter((r) => r.status === 'Active');
     const redeemedRecords = records.filter((r) => r.status === 'Redeemed');
 
+    // Total upfront interest collected from all active pawns (1 month interest each)
+    const totalUpfrontInterest = activeRecords.reduce((sum, r) => {
+      const upfront = (r.pawnAmount * r.interestRate) / 100;
+      return sum + upfront;
+    }, 0);
+
+    // Total interest earned from redeemed pawns (upfront + additional)
     const totalInterestEarned = redeemedRecords.reduce((sum, r) => {
-      const { interestAmount } = calculateInterest(
+      const { upfrontDeduction, interestAmount } = calculateInterest(
         r.pawnAmount,
         r.interestRate,
         r.pawnDate,
         r.redeemedDate
       );
-      return sum + interestAmount;
+      return sum + upfrontDeduction + interestAmount;
     }, 0);
 
     return {
@@ -191,6 +198,7 @@ export function usePawnStore() {
       totalActivePawns: activeRecords.length,
       totalRedeemedPawns: redeemedRecords.length,
       totalPawnAmount: activeRecords.reduce((sum, r) => sum + r.pawnAmount, 0),
+      totalUpfrontInterest,
       totalInterestEarned,
     };
   };
