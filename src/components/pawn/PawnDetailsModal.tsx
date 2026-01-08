@@ -10,7 +10,7 @@ interface PawnDetailsModalProps {
 }
 
 export function PawnDetailsModal({ record, onClose, onRedeem }: PawnDetailsModalProps) {
-  const { days, months, interestAmount, totalPayable } = calculateInterest(
+  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, totalPayable, amountGiven } = calculateInterest(
     record.pawnAmount,
     record.interestRate,
     record.pawnDate,
@@ -25,6 +25,8 @@ export function PawnDetailsModal({ record, onClose, onRedeem }: PawnDetailsModal
     { icon: Gem, label: 'Jewellery Type', value: record.jewelleryType },
     { icon: Scale, label: 'Weight', value: `${record.jewelleryWeight} grams` },
     { icon: IndianRupee, label: 'Pawn Amount', value: formatCurrency(record.pawnAmount) },
+    { icon: IndianRupee, label: 'Upfront Deduction (1 month)', value: formatCurrency(upfrontDeduction) },
+    { icon: IndianRupee, label: 'Amount Given', value: formatCurrency(amountGiven) },
     { icon: Percent, label: 'Interest Rate', value: `${record.interestRate}% per month` },
   ];
 
@@ -72,13 +74,25 @@ export function PawnDetailsModal({ record, onClose, onRedeem }: PawnDetailsModal
             <div>
               <p className="text-sm text-muted-foreground">Duration</p>
               <p className="text-lg font-semibold text-foreground">
-                {days} days ({months} months)
+                {days} days ({totalMonths} months)
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Effective Months</p>
+              <p className="text-lg font-semibold text-foreground">
+                {effectiveMonths} months
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Interest Amount</p>
               <p className="text-lg font-semibold text-gold">
                 {formatCurrency(interestAmount)}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Upfront Deducted</p>
+              <p className="text-lg font-semibold text-foreground">
+                {formatCurrency(upfrontDeduction)}
               </p>
             </div>
             <div className="col-span-2 pt-3 border-t border-border">

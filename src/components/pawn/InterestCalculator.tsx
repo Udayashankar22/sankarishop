@@ -11,10 +11,17 @@ export function InterestCalculator() {
 
   const pawnAmount = parseFloat(amount || '0');
   const interestRate = parseFloat(rate || '0');
-  const duration = parseFloat(months || '0');
+  const totalMonths = parseFloat(months || '0');
 
-  // Interest calculation: (Principal * Rate * Time) / 100
-  const interestAmount = (pawnAmount * interestRate * duration) / 100;
+  // Upfront deduction (1 month interest)
+  const upfrontDeduction = (pawnAmount * interestRate) / 100;
+  const amountGiven = pawnAmount - upfrontDeduction;
+  
+  // Effective months = totalMonths - 1 (since 1 month was deducted upfront)
+  const effectiveMonths = Math.max(0, totalMonths - 1);
+  
+  // Interest for effective months
+  const interestAmount = (pawnAmount * interestRate * effectiveMonths) / 100;
   const totalPayable = pawnAmount + interestAmount;
 
   return (
@@ -59,12 +66,13 @@ export function InterestCalculator() {
         <div className="space-y-2">
           <Label htmlFor="calc-months" className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-gold" />
-            Duration (Months)
+            Total Months
           </Label>
           <Input
             id="calc-months"
             type="number"
-            step="0.5"
+            step="1"
+            min="1"
             value={months}
             onChange={(e) => setMonths(e.target.value)}
             placeholder="Enter months"
@@ -72,22 +80,34 @@ export function InterestCalculator() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-secondary/30 rounded-xl p-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-secondary/30 rounded-xl p-4">
         <div className="text-center p-3">
-          <p className="text-sm text-muted-foreground mb-1">Duration</p>
-          <p className="text-xl font-semibold text-foreground">
-            {duration} {duration === 1 ? 'month' : 'months'}
+          <p className="text-sm text-muted-foreground mb-1">Upfront Deduction</p>
+          <p className="text-lg font-semibold text-foreground">
+            {formatCurrency(upfrontDeduction)}
+          </p>
+        </div>
+        <div className="text-center p-3">
+          <p className="text-sm text-muted-foreground mb-1">Amount Given</p>
+          <p className="text-lg font-semibold text-foreground">
+            {formatCurrency(amountGiven)}
+          </p>
+        </div>
+        <div className="text-center p-3">
+          <p className="text-sm text-muted-foreground mb-1">Effective Months</p>
+          <p className="text-lg font-semibold text-foreground">
+            {effectiveMonths} {effectiveMonths === 1 ? 'month' : 'months'}
           </p>
         </div>
         <div className="text-center p-3">
           <p className="text-sm text-muted-foreground mb-1">Interest Amount</p>
-          <p className="text-xl font-semibold text-gold">
+          <p className="text-lg font-semibold text-gold">
             {formatCurrency(interestAmount)}
           </p>
         </div>
         <div className="text-center p-3 bg-gold/10 rounded-lg gold-border">
           <p className="text-sm text-muted-foreground mb-1">Total Payable</p>
-          <p className="text-2xl font-bold font-serif gradient-gold-text">
+          <p className="text-xl font-bold font-serif gradient-gold-text">
             {formatCurrency(totalPayable)}
           </p>
         </div>
