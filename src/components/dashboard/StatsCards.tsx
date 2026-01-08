@@ -37,16 +37,23 @@ export function StatsCards({ stats }: StatsCardsProps) {
       bgColor: 'bg-gold-light/10',
     },
     {
-      title: 'Interest Earned',
-      value: formatCurrency(stats.totalInterestEarned),
+      title: 'Upfront Interest (1 Month)',
+      value: formatCurrency(stats.totalUpfrontInterest),
       icon: TrendingUp,
       color: 'text-gold',
       bgColor: 'bg-gold/10',
     },
+    {
+      title: 'Interest Earned (Redeemed)',
+      value: formatCurrency(stats.totalInterestEarned),
+      icon: TrendingUp,
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+    },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
       {cards.map((card, index) => (
         <div
           key={card.title}
