@@ -16,6 +16,9 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
     record.pawnDate
   );
 
+  // Total interest earned = upfront (1 month) + additional interest for effective months
+  const totalInterestEarned = upfrontDeduction + interestAmount;
+
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="glass-card rounded-2xl p-6 w-full max-w-md gold-border animate-fade-in">
@@ -46,20 +49,26 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Duration</span>
-            <span className="font-medium text-foreground">{days} days ({totalMonths} months)</span>
+            <span className="font-medium text-foreground">{days} days ({totalMonths} {totalMonths === 1 ? 'month' : 'months'})</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Upfront Deduction (1 month)</span>
-            <span className="font-medium text-foreground">{formatCurrency(upfrontDeduction)}</span>
+          
+          <div className="pt-3 border-t border-border space-y-2">
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Upfront Interest (1 month)</span>
+              <span className="font-medium text-gold">{formatCurrency(upfrontDeduction)}</span>
+            </div>
+            {effectiveMonths > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Additional Interest ({effectiveMonths} {effectiveMonths === 1 ? 'month' : 'months'})</span>
+                <span className="font-medium text-gold">{formatCurrency(interestAmount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between bg-gold/10 p-2 rounded-lg">
+              <span className="font-semibold text-foreground">Total Interest Earned</span>
+              <span className="font-bold text-gold">{formatCurrency(totalInterestEarned)}</span>
+            </div>
           </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Effective Months</span>
-            <span className="font-medium text-foreground">{effectiveMonths} months</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-muted-foreground">Interest ({record.interestRate}% × {effectiveMonths})</span>
-            <span className="font-semibold text-gold">{formatCurrency(interestAmount)}</span>
-          </div>
+          
           <div className="pt-3 border-t border-border flex justify-between">
             <span className="font-semibold text-foreground">Total to Collect</span>
             <span className="text-xl font-bold gradient-gold-text">{formatCurrency(totalPayable)}</span>
