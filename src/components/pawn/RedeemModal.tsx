@@ -10,7 +10,7 @@ interface RedeemModalProps {
 }
 
 export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
-  const { days, months, interestAmount, totalPayable } = calculateInterest(
+  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, totalPayable } = calculateInterest(
     record.pawnAmount,
     record.interestRate,
     record.pawnDate
@@ -46,10 +46,18 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Duration</span>
-            <span className="font-medium text-foreground">{days} days ({months} months)</span>
+            <span className="font-medium text-foreground">{days} days ({totalMonths} months)</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">Interest ({record.interestRate}%)</span>
+            <span className="text-muted-foreground">Upfront Deduction (1 month)</span>
+            <span className="font-medium text-foreground">{formatCurrency(upfrontDeduction)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Effective Months</span>
+            <span className="font-medium text-foreground">{effectiveMonths} months</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Interest ({record.interestRate}% × {effectiveMonths})</span>
             <span className="font-semibold text-gold">{formatCurrency(interestAmount)}</span>
           </div>
           <div className="pt-3 border-t border-border flex justify-between">
