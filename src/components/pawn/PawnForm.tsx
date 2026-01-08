@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PawnRecord, JewelleryType, StorageLocation } from '@/types/pawn';
+import { formatCurrency } from '@/lib/pawnCalculations';
 
-import { X, Gem, MapPin } from 'lucide-react';
+import { X, Gem, MapPin, IndianRupee } from 'lucide-react';
 
 const storageLocations: StorageLocation[] = ['Locker', 'GRS', 'Bank'];
 
@@ -392,6 +393,36 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               {touched.interestRate && <ErrorMessage error={errors.interestRate} />}
             </div>
           </div>
+
+          {/* Upfront Deduction Summary */}
+          {formData.pawnAmount && formData.interestRate && (
+            <div className="bg-gold/10 rounded-xl p-4 gold-border">
+              <div className="flex items-center gap-2 mb-3">
+                <IndianRupee className="h-4 w-4 text-gold" />
+                <span className="font-medium text-foreground">Upfront Deduction (1 Month Interest)</span>
+              </div>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-sm text-muted-foreground">Pawn Amount</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {formatCurrency(parseFloat(formData.pawnAmount) || 0)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">1 Month Interest</p>
+                  <p className="text-lg font-semibold text-gold">
+                    {formatCurrency(((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100)}
+                  </p>
+                </div>
+                <div className="bg-background/50 rounded-lg p-2">
+                  <p className="text-sm text-muted-foreground">Amount to Give</p>
+                  <p className="text-xl font-bold gradient-gold-text">
+                    {formatCurrency((parseFloat(formData.pawnAmount) || 0) - (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100))}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Storage Location */}
           <div className="space-y-4 p-4 rounded-lg bg-secondary/30 border border-border">
