@@ -201,11 +201,12 @@ export function PawnTable({
               </tr>
             ) : (
               filteredRecords.map((record, index) => {
-                const { interestAmount, totalPayable, days } = calculateInterest(
+                const { interestAmount, totalPayable, days, upfrontDeduction } = calculateInterest(
                   record.pawnAmount,
                   record.interestRate,
                   record.pawnDate,
-                  record.redeemedDate
+                  record.redeemedDate,
+                  record.paperLoanInterest
                 );
 
                 return (

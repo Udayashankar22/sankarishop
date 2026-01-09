@@ -11,6 +11,7 @@ export interface PawnRecord {
   jewelleryWeight: number;
   pawnAmount: number;
   interestRate: number;
+  paperLoanInterest: number;
   status: 'Active' | 'Redeemed';
   redeemedDate?: string;
   userId?: string;

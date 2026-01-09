@@ -10,13 +10,15 @@ interface RedeemModalProps {
 }
 
 export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
-  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, totalPayable } = calculateInterest(
+  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, oneMonthInterest, paperInterest, totalPayable } = calculateInterest(
     record.pawnAmount,
     record.interestRate,
-    record.pawnDate
+    record.pawnDate,
+    undefined,
+    record.paperLoanInterest
   );
 
-  // Total interest earned = upfront (1 month) + additional interest for effective months
+  // Total interest earned = upfront (1 month + paper loan) + additional interest for effective months
   const totalInterestEarned = upfrontDeduction + interestAmount;
 
   return (
@@ -54,7 +56,17 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
           
           <div className="pt-3 border-t border-border space-y-2">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Upfront Interest (1 month)</span>
+              <span className="text-muted-foreground">1 Month Interest</span>
+              <span className="font-medium text-gold">{formatCurrency(oneMonthInterest)}</span>
+            </div>
+            {paperInterest > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Paper Loan Interest</span>
+                <span className="font-medium text-gold">{formatCurrency(paperInterest)}</span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Total Upfront Deduction</span>
               <span className="font-medium text-gold">{formatCurrency(upfrontDeduction)}</span>
             </div>
             {effectiveMonths > 0 && (
