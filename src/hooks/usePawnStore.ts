@@ -21,6 +21,7 @@ interface DbPawnRecord {
   jewellery_weight: number;
   pawn_amount: number;
   interest_rate: number;
+  paper_loan_interest: number;
   status: DbPawnStatus;
   redeemed_date: string | null;
   created_at: string;
@@ -41,6 +42,7 @@ function mapDbToRecord(db: DbPawnRecord): PawnRecord {
     jewelleryWeight: Number(db.jewellery_weight),
     pawnAmount: Number(db.pawn_amount),
     interestRate: Number(db.interest_rate),
+    paperLoanInterest: Number(db.paper_loan_interest),
     status: db.status,
     redeemedDate: db.redeemed_date || undefined,
     userId: db.user_id,
@@ -95,6 +97,7 @@ export function usePawnStore() {
         jewellery_weight: record.jewelleryWeight,
         pawn_amount: record.pawnAmount,
         interest_rate: record.interestRate,
+        paper_loan_interest: record.paperLoanInterest,
         status: 'Active' as DbPawnStatus,
         storage_location: record.storageLocation || null,
         storage_serial_number: record.storageSerialNumber || null,
@@ -123,6 +126,7 @@ export function usePawnStore() {
     if (updates.jewelleryWeight) updateData.jewellery_weight = updates.jewelleryWeight;
     if (updates.pawnAmount) updateData.pawn_amount = updates.pawnAmount;
     if (updates.interestRate) updateData.interest_rate = updates.interestRate;
+    if (updates.paperLoanInterest !== undefined) updateData.paper_loan_interest = updates.paperLoanInterest;
     if (updates.status) updateData.status = updates.status;
     if (updates.redeemedDate) updateData.redeemed_date = updates.redeemedDate;
     if (updates.storageLocation !== undefined) updateData.storage_location = updates.storageLocation || null;
@@ -176,10 +180,11 @@ export function usePawnStore() {
     const activeRecords = records.filter((r) => r.status === 'Active');
     const redeemedRecords = records.filter((r) => r.status === 'Redeemed');
 
-    // Total upfront interest collected from all active pawns (1 month interest each)
+    // Total upfront interest collected from all active pawns (1 month interest + paper loan interest each)
     const totalUpfrontInterest = activeRecords.reduce((sum, r) => {
-      const upfront = (r.pawnAmount * r.interestRate) / 100;
-      return sum + upfront;
+      const oneMonthInterest = (r.pawnAmount * r.interestRate) / 100;
+      const paperInterest = (r.pawnAmount * r.paperLoanInterest) / 100;
+      return sum + oneMonthInterest + paperInterest;
     }, 0);
 
     // Total interest earned from redeemed pawns (upfront + additional)
@@ -188,7 +193,8 @@ export function usePawnStore() {
         r.pawnAmount,
         r.interestRate,
         r.pawnDate,
-        r.redeemedDate
+        r.redeemedDate,
+        r.paperLoanInterest
       );
       return sum + upfrontDeduction + interestAmount;
     }, 0);

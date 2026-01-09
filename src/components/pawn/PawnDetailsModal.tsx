@@ -10,11 +10,12 @@ interface PawnDetailsModalProps {
 }
 
 export function PawnDetailsModal({ record, onClose, onRedeem }: PawnDetailsModalProps) {
-  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, totalPayable, amountGiven } = calculateInterest(
+  const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, oneMonthInterest, paperInterest, totalPayable, amountGiven } = calculateInterest(
     record.pawnAmount,
     record.interestRate,
     record.pawnDate,
-    record.redeemedDate
+    record.redeemedDate,
+    record.paperLoanInterest
   );
 
   const details = [
@@ -25,9 +26,12 @@ export function PawnDetailsModal({ record, onClose, onRedeem }: PawnDetailsModal
     { icon: Gem, label: 'Jewellery Type', value: record.jewelleryType },
     { icon: Scale, label: 'Weight', value: `${record.jewelleryWeight} grams` },
     { icon: IndianRupee, label: 'Pawn Amount', value: formatCurrency(record.pawnAmount) },
-    { icon: IndianRupee, label: 'Upfront Deduction (1 month)', value: formatCurrency(upfrontDeduction) },
+    { icon: IndianRupee, label: '1 Month Interest', value: formatCurrency(oneMonthInterest) },
+    { icon: IndianRupee, label: 'Paper Loan Interest', value: formatCurrency(paperInterest) },
+    { icon: IndianRupee, label: 'Total Upfront Deduction', value: formatCurrency(upfrontDeduction) },
     { icon: IndianRupee, label: 'Amount Given', value: formatCurrency(amountGiven) },
     { icon: Percent, label: 'Interest Rate', value: `${record.interestRate}% per month` },
+    { icon: Percent, label: 'Paper Loan Interest', value: `${record.paperLoanInterest}%` },
   ];
 
   return (

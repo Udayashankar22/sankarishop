@@ -12,14 +12,16 @@ export function calculateMonths(pawnDate: string, endDate?: string): { days: num
   return { days, totalMonths };
 }
 
-// Calculate upfront deduction at loan initiation (1 month interest)
-export function calculateUpfrontDeduction(pawnAmount: number, interestRate: number): number {
-  return parseFloat(((pawnAmount * interestRate) / 100).toFixed(2));
+// Calculate upfront deduction at loan initiation (1 month interest + paper loan interest)
+export function calculateUpfrontDeduction(pawnAmount: number, interestRate: number, paperLoanInterest: number = 0): number {
+  const oneMonthInterest = (pawnAmount * interestRate) / 100;
+  const paperInterest = (pawnAmount * paperLoanInterest) / 100;
+  return parseFloat((oneMonthInterest + paperInterest).toFixed(2));
 }
 
 // Calculate amount given to customer after upfront deduction
-export function calculateAmountGiven(pawnAmount: number, interestRate: number): number {
-  const upfrontDeduction = calculateUpfrontDeduction(pawnAmount, interestRate);
+export function calculateAmountGiven(pawnAmount: number, interestRate: number, paperLoanInterest: number = 0): number {
+  const upfrontDeduction = calculateUpfrontDeduction(pawnAmount, interestRate, paperLoanInterest);
   return parseFloat((pawnAmount - upfrontDeduction).toFixed(2));
 }
 
@@ -27,13 +29,16 @@ export function calculateInterest(
   pawnAmount: number,
   interestRate: number,
   pawnDate: string,
-  endDate?: string
+  endDate?: string,
+  paperLoanInterest: number = 0
 ): { 
   days: number; 
   totalMonths: number; 
   effectiveMonths: number; 
   interestAmount: number; 
   upfrontDeduction: number;
+  paperInterest: number;
+  oneMonthInterest: number;
   totalPayable: number;
   amountGiven: number;
 } {
@@ -42,8 +47,12 @@ export function calculateInterest(
   // Effective months = totalMonths - 1 (since 1 month was deducted upfront)
   const effectiveMonths = Math.max(0, totalMonths - 1);
   
-  // Upfront deduction (1 month interest deducted at loan initiation)
-  const upfrontDeduction = calculateUpfrontDeduction(pawnAmount, interestRate);
+  // Calculate individual components
+  const oneMonthInterest = parseFloat(((pawnAmount * interestRate) / 100).toFixed(2));
+  const paperInterest = parseFloat(((pawnAmount * paperLoanInterest) / 100).toFixed(2));
+  
+  // Upfront deduction (1 month interest + paper loan interest)
+  const upfrontDeduction = parseFloat((oneMonthInterest + paperInterest).toFixed(2));
   
   // Amount actually given to customer
   const amountGiven = pawnAmount - upfrontDeduction;
@@ -60,6 +69,8 @@ export function calculateInterest(
     effectiveMonths,
     interestAmount,
     upfrontDeduction,
+    paperInterest,
+    oneMonthInterest,
     totalPayable,
     amountGiven,
   };

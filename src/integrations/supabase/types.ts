@@ -23,6 +23,7 @@ export type Database = {
           interest_rate: number
           jewellery_type: string
           jewellery_weight: number
+          paper_loan_interest: number
           pawn_amount: number
           pawn_date: string
           phone_number: string
@@ -42,6 +43,7 @@ export type Database = {
           interest_rate: number
           jewellery_type: string
           jewellery_weight: number
+          paper_loan_interest?: number
           pawn_amount: number
           pawn_date: string
           phone_number: string
@@ -61,6 +63,7 @@ export type Database = {
           interest_rate?: number
           jewellery_type?: string
           jewellery_weight?: number
+          paper_loan_interest?: number
           pawn_amount?: number
           pawn_date?: string
           phone_number?: string

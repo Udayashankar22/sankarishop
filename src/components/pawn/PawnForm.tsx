@@ -42,6 +42,7 @@ interface FormErrors {
   jewelleryWeight?: string;
   pawnAmount?: string;
   interestRate?: string;
+  paperLoanInterest?: string;
   storageSerialNumber?: string;
 }
 
@@ -59,6 +60,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     jewelleryWeight: initialData?.jewelleryWeight?.toString() || '',
     pawnAmount: initialData?.pawnAmount?.toString() || '',
     interestRate: initialData?.interestRate?.toString() || '2',
+    paperLoanInterest: initialData?.paperLoanInterest?.toString() || '0',
     status: initialData?.status || 'Active' as const,
     storageLocation: (initialData?.storageLocation || '') as StorageLocation | '',
     storageSerialNumber: initialData?.storageSerialNumber || '',
@@ -124,6 +126,14 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
         if (rate > 100) return 'Interest rate cannot exceed 100%';
         return undefined;
 
+      case 'paperLoanInterest':
+        if (value) {
+          const paperRate = parseFloat(value);
+          if (isNaN(paperRate) || paperRate < 0) return 'Enter a valid rate';
+          if (paperRate > 1) return 'Paper loan interest cannot exceed 1%';
+        }
+        return undefined;
+
       case 'storageSerialNumber':
         if ((formData.storageLocation === 'GRS' || formData.storageLocation === 'Bank') && !value.trim()) {
           return 'Storage serial number is required for GRS/Bank';
@@ -148,6 +158,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     newErrors.jewelleryWeight = validateField('jewelleryWeight', formData.jewelleryWeight);
     newErrors.pawnAmount = validateField('pawnAmount', formData.pawnAmount);
     newErrors.interestRate = validateField('interestRate', formData.interestRate);
+    newErrors.paperLoanInterest = validateField('paperLoanInterest', formData.paperLoanInterest);
     newErrors.storageSerialNumber = validateField('storageSerialNumber', formData.storageSerialNumber);
 
     // Remove undefined errors
@@ -207,6 +218,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
       jewelleryWeight: parseFloat(formData.jewelleryWeight),
       pawnAmount: parseFloat(formData.pawnAmount),
       interestRate: parseFloat(formData.interestRate),
+      paperLoanInterest: parseFloat(formData.paperLoanInterest) || 0,
       status: formData.status,
       storageLocation: formData.storageLocation || undefined,
       storageSerialNumber: formData.storageLocation === 'Locker' ? undefined : formData.storageSerialNumber.trim() || undefined,
@@ -352,7 +364,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
           )}
 
           {/* Pawn Details */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
               <Label htmlFor="pawnDate" className="text-foreground">Pawn Date *</Label>
               <Input
@@ -392,6 +404,22 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               />
               {touched.interestRate && <ErrorMessage error={errors.interestRate} />}
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="paperLoanInterest" className="text-foreground">Paper Loan Interest (0-1%)</Label>
+              <Input
+                id="paperLoanInterest"
+                type="number"
+                step="0.1"
+                min="0"
+                max="1"
+                value={formData.paperLoanInterest}
+                onChange={(e) => handleChange('paperLoanInterest', e.target.value)}
+                onBlur={() => handleBlur('paperLoanInterest')}
+                placeholder="0-1%"
+                className={`[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${errors.paperLoanInterest && touched.paperLoanInterest ? 'border-destructive' : ''}`}
+              />
+              {touched.paperLoanInterest && <ErrorMessage error={errors.paperLoanInterest} />}
+            </div>
           </div>
 
           {/* Upfront Deduction Summary */}
@@ -399,9 +427,9 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
             <div className="bg-gold/10 rounded-xl p-4 gold-border">
               <div className="flex items-center gap-2 mb-3">
                 <IndianRupee className="h-4 w-4 text-gold" />
-                <span className="font-medium text-foreground">Upfront Deduction (1 Month Interest)</span>
+                <span className="font-medium text-foreground">Upfront Deduction Summary</span>
               </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                 <div>
                   <p className="text-sm text-muted-foreground">Pawn Amount</p>
                   <p className="text-lg font-semibold text-foreground">
@@ -414,10 +442,29 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
                     {formatCurrency(((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100)}
                   </p>
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Paper Loan</p>
+                  <p className="text-lg font-semibold text-gold">
+                    {formatCurrency(((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.paperLoanInterest) || 0)) / 100)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Deduction</p>
+                  <p className="text-lg font-semibold text-gold">
+                    {formatCurrency(
+                      (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100) +
+                      (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.paperLoanInterest) || 0)) / 100)
+                    )}
+                  </p>
+                </div>
                 <div className="bg-background/50 rounded-lg p-2">
                   <p className="text-sm text-muted-foreground">Amount to Give</p>
                   <p className="text-xl font-bold gradient-gold-text">
-                    {formatCurrency((parseFloat(formData.pawnAmount) || 0) - (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100))}
+                    {formatCurrency(
+                      (parseFloat(formData.pawnAmount) || 0) - 
+                      (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.interestRate) || 0)) / 100) -
+                      (((parseFloat(formData.pawnAmount) || 0) * (parseFloat(formData.paperLoanInterest) || 0)) / 100)
+                    )}
                   </p>
                 </div>
               </div>

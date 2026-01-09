@@ -7,14 +7,20 @@ import { Calculator, IndianRupee, Percent, Calendar } from 'lucide-react';
 export function InterestCalculator() {
   const [amount, setAmount] = useState<string>('100000');
   const [rate, setRate] = useState<string>('2');
+  const [paperRate, setPaperRate] = useState<string>('0');
   const [months, setMonths] = useState<string>('1');
 
   const pawnAmount = parseFloat(amount || '0');
   const interestRate = parseFloat(rate || '0');
+  const paperLoanInterest = parseFloat(paperRate || '0');
   const totalMonths = parseFloat(months || '0');
 
-  // Upfront deduction (1 month interest)
-  const upfrontDeduction = (pawnAmount * interestRate) / 100;
+  // 1 month interest
+  const oneMonthInterest = (pawnAmount * interestRate) / 100;
+  // Paper loan interest
+  const paperInterest = (pawnAmount * paperLoanInterest) / 100;
+  // Total upfront deduction (1 month interest + paper loan interest)
+  const upfrontDeduction = oneMonthInterest + paperInterest;
   const amountGiven = pawnAmount - upfrontDeduction;
   
   // Effective months = totalMonths - 1 (since 1 month was deducted upfront)
@@ -35,7 +41,7 @@ export function InterestCalculator() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="space-y-2">
           <Label htmlFor="calc-amount" className="flex items-center gap-2 text-foreground">
             <IndianRupee className="h-4 w-4 text-gold" />
@@ -64,6 +70,22 @@ export function InterestCalculator() {
           />
         </div>
         <div className="space-y-2">
+          <Label htmlFor="calc-paper-rate" className="flex items-center gap-2 text-foreground">
+            <Percent className="h-4 w-4 text-gold" />
+            Paper Loan (0-1%)
+          </Label>
+          <Input
+            id="calc-paper-rate"
+            type="number"
+            step="0.1"
+            min="0"
+            max="1"
+            value={paperRate}
+            onChange={(e) => setPaperRate(e.target.value)}
+            placeholder="0-1%"
+          />
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="calc-months" className="flex items-center gap-2 text-foreground">
             <Calendar className="h-4 w-4 text-gold" />
             Total Months
@@ -80,9 +102,21 @@ export function InterestCalculator() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 bg-secondary/30 rounded-xl p-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 bg-secondary/30 rounded-xl p-4">
         <div className="text-center p-3">
-          <p className="text-sm text-muted-foreground mb-1">Upfront Deduction</p>
+          <p className="text-sm text-muted-foreground mb-1">1 Month Interest</p>
+          <p className="text-lg font-semibold text-foreground">
+            {formatCurrency(oneMonthInterest)}
+          </p>
+        </div>
+        <div className="text-center p-3">
+          <p className="text-sm text-muted-foreground mb-1">Paper Loan</p>
+          <p className="text-lg font-semibold text-foreground">
+            {formatCurrency(paperInterest)}
+          </p>
+        </div>
+        <div className="text-center p-3">
+          <p className="text-sm text-muted-foreground mb-1">Total Upfront</p>
           <p className="text-lg font-semibold text-foreground">
             {formatCurrency(upfrontDeduction)}
           </p>
@@ -94,13 +128,7 @@ export function InterestCalculator() {
           </p>
         </div>
         <div className="text-center p-3">
-          <p className="text-sm text-muted-foreground mb-1">Effective Months</p>
-          <p className="text-lg font-semibold text-foreground">
-            {effectiveMonths} {effectiveMonths === 1 ? 'month' : 'months'}
-          </p>
-        </div>
-        <div className="text-center p-3">
-          <p className="text-sm text-muted-foreground mb-1">Interest Amount</p>
+          <p className="text-sm text-muted-foreground mb-1">Add. Interest ({effectiveMonths}m)</p>
           <p className="text-lg font-semibold text-gold">
             {formatCurrency(interestAmount)}
           </p>
