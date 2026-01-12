@@ -109,6 +109,9 @@ const Index = () => {
 
   const stats = getStats();
 
+  // Get unique addresses from all records for autocomplete suggestions
+  const previousAddresses = [...new Set(records.map(r => r.address).filter(Boolean))];
+
   return (
     <div className="min-h-screen bg-background">
       <Header
@@ -234,6 +237,7 @@ const Index = () => {
         <PawnForm
           onSubmit={handleAddRecord}
           onClose={() => setShowForm(false)}
+          previousAddresses={previousAddresses}
         />
       )}
 
@@ -242,6 +246,7 @@ const Index = () => {
           initialData={editingRecord}
           onSubmit={handleEditRecord}
           onClose={() => setEditingRecord(null)}
+          previousAddresses={previousAddresses}
         />
       )}
 
