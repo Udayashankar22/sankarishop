@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,6 +29,7 @@ interface PawnFormProps {
   onSubmit: (record: Omit<PawnRecord, 'id'>) => void;
   onClose: () => void;
   initialData?: PawnRecord;
+  previousAddresses?: string[];
 }
 
 interface FormErrors {
@@ -47,9 +48,9 @@ interface FormErrors {
   storageSerialNumber?: string;
 }
 
-export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
+export function PawnForm({ onSubmit, onClose, initialData, previousAddresses = [] }: PawnFormProps) {
   const isCustomType = initialData?.jewelleryType && !jewelleryTypes.includes(initialData.jewelleryType);
-  
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
   const [formData, setFormData] = useState({
     serialNumber: initialData?.serialNumber || '',
     name: initialData?.name || '',
@@ -202,6 +203,20 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     }
   };
 
+  // Filter address suggestions based on current input
+  const filteredAddressSuggestions = useMemo(() => {
+    if (!formData.address.trim() || formData.address.length < 2) return [];
+    const searchTerm = formData.address.toLowerCase().trim();
+    return previousAddresses
+      .filter(addr => addr.toLowerCase().includes(searchTerm) && addr.toLowerCase() !== searchTerm)
+      .slice(0, 5);
+  }, [formData.address, previousAddresses]);
+
+  const handleAddressSelect = (address: string) => {
+    setFormData({ ...formData, address });
+    setShowAddressSuggestions(false);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -307,17 +322,42 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <Label htmlFor="address" className="text-foreground">Address</Label>
             <Textarea
               id="address"
               value={formData.address}
-              onChange={(e) => handleChange('address', e.target.value)}
-              onBlur={() => handleBlur('address')}
+              onChange={(e) => {
+                handleChange('address', e.target.value);
+                setShowAddressSuggestions(true);
+              }}
+              onFocus={() => setShowAddressSuggestions(true)}
+              onBlur={() => {
+                // Delay hiding to allow click on suggestion
+                setTimeout(() => {
+                  handleBlur('address');
+                  setShowAddressSuggestions(false);
+                }, 200);
+              }}
               placeholder="Enter customer address"
               rows={2}
               className={errors.address && touched.address ? 'border-destructive' : ''}
             />
+            {/* Address Suggestions Dropdown */}
+            {showAddressSuggestions && filteredAddressSuggestions.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-popover border border-border rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {filteredAddressSuggestions.map((address, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-secondary/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                    onMouseDown={() => handleAddressSelect(address)}
+                  >
+                    <span className="text-foreground">{address}</span>
+                  </button>
+                ))}
+              </div>
+            )}
             {touched.address && <ErrorMessage error={errors.address} />}
           </div>
 
