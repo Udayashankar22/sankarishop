@@ -75,10 +75,10 @@ const Index = () => {
     }
   };
 
-  const handleRedeemConfirm = async () => {
+  const handleRedeemConfirm = async (redemptionDate: string) => {
     if (redeemingRecord) {
       try {
-        await redeemRecord(redeemingRecord.id);
+        await redeemRecord(redeemingRecord.id, redemptionDate);
         setRedeemingRecord(null);
         setViewingRecord(null);
         toast.success('Jewellery redeemed successfully!');

@@ -159,12 +159,12 @@ export function usePawnStore() {
     await fetchRecords();
   };
 
-  const redeemRecord = async (id: string) => {
+  const redeemRecord = async (id: string, redemptionDate?: string) => {
     const { error } = await supabase
       .from('pawn_records')
       .update({
         status: 'Redeemed' as DbPawnStatus,
-        redeemed_date: new Date().toISOString().split('T')[0],
+        redeemed_date: redemptionDate || new Date().toISOString().split('T')[0],
       })
       .eq('id', id);
 

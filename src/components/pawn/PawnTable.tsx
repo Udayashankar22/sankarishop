@@ -271,39 +271,44 @@ export function PawnTable({
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <span
-                        className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                          record.status === 'Active'
-                            ? 'bg-gold/20 text-gold'
-                            : 'bg-success/20 text-success'
-                        }`}
-                      >
-                        {record.status}
-                      </span>
+                      <div>
+                        <span
+                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                            record.status === 'Active'
+                              ? 'bg-gold/20 text-gold'
+                              : 'bg-success/20 text-success'
+                          }`}
+                        >
+                          {record.status}
+                        </span>
+                        {record.status === 'Redeemed' && record.redeemedDate && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {formatDate(record.redeemedDate)}
+                          </p>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => onEdit(record)}
+                          className="h-8 w-8"
+                          title="Edit record"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
                         {record.status === 'Active' && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onEdit(record)}
-                              className="h-8 w-8"
-                              title="Edit record"
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => onRedeem(record.id)}
-                              className="h-8 w-8 text-success hover:text-success"
-                              title="Redeem"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                          </>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => onRedeem(record.id)}
+                            className="h-8 w-8 text-success hover:text-success"
+                            title="Redeem"
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
                         )}
                         <Button
                           variant="ghost"

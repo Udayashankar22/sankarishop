@@ -37,6 +37,7 @@ interface FormErrors {
   phoneNumber?: string;
   address?: string;
   pawnDate?: string;
+  redeemedDate?: string;
   jewelleryType?: string;
   customJewelleryType?: string;
   jewelleryWeight?: string;
@@ -62,6 +63,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     interestRate: initialData?.interestRate?.toString() || '2',
     paperLoanInterest: initialData?.paperLoanInterest?.toString() || '0',
     status: initialData?.status || 'Active' as const,
+    redeemedDate: initialData?.redeemedDate || '',
     storageLocation: (initialData?.storageLocation || '') as StorageLocation | '',
     storageSerialNumber: initialData?.storageSerialNumber || '',
   });
@@ -98,6 +100,15 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
         const today = new Date();
         today.setHours(23, 59, 59, 999);
         if (selectedDate > today) return 'Pawn date cannot be in the future';
+        return undefined;
+
+      case 'redeemedDate':
+        if (formData.status === 'Redeemed' && !value) return 'Redemption date is required for redeemed pawns';
+        if (value) {
+          const redemptionDate = new Date(value);
+          const pawnDate = new Date(formData.pawnDate);
+          if (redemptionDate < pawnDate) return 'Redemption date cannot be before pawn date';
+        }
         return undefined;
 
       case 'customJewelleryType':
@@ -154,6 +165,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
     newErrors.phoneNumber = validateField('phoneNumber', formData.phoneNumber);
     newErrors.address = validateField('address', formData.address);
     newErrors.pawnDate = validateField('pawnDate', formData.pawnDate);
+    newErrors.redeemedDate = validateField('redeemedDate', formData.redeemedDate);
     newErrors.customJewelleryType = validateField('customJewelleryType', formData.customJewelleryType || '');
     newErrors.jewelleryWeight = validateField('jewelleryWeight', formData.jewelleryWeight);
     newErrors.pawnAmount = validateField('pawnAmount', formData.pawnAmount);
@@ -220,6 +232,7 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
       interestRate: parseFloat(formData.interestRate),
       paperLoanInterest: parseFloat(formData.paperLoanInterest) || 0,
       status: formData.status,
+      redeemedDate: formData.redeemedDate || undefined,
       storageLocation: formData.storageLocation || undefined,
       storageSerialNumber: formData.storageLocation === 'Locker' ? undefined : formData.storageSerialNumber.trim() || undefined,
     });
@@ -421,6 +434,26 @@ export function PawnForm({ onSubmit, onClose, initialData }: PawnFormProps) {
               {touched.paperLoanInterest && <ErrorMessage error={errors.paperLoanInterest} />}
             </div>
           </div>
+
+          {/* Redemption Date (only shown for redeemed records) */}
+          {initialData?.status === 'Redeemed' && (
+            <div className="space-y-2">
+              <Label htmlFor="redeemedDate" className="text-foreground">Redemption Date *</Label>
+              <Input
+                id="redeemedDate"
+                type="date"
+                value={formData.redeemedDate}
+                onChange={(e) => handleChange('redeemedDate', e.target.value)}
+                onBlur={() => handleBlur('redeemedDate')}
+                min={formData.pawnDate}
+                className={`[color-scheme:dark] ${errors.redeemedDate && touched.redeemedDate ? 'border-destructive' : ''}`}
+              />
+              {touched.redeemedDate && <ErrorMessage error={errors.redeemedDate} />}
+              <p className="text-sm text-muted-foreground">
+                Changing the redemption date will recalculate the final interest amount.
+              </p>
+            </div>
+          )}
 
           {/* Upfront Deduction Summary */}
           {formData.pawnAmount && formData.interestRate && (

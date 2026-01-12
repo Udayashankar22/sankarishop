@@ -1,20 +1,28 @@
+import { useState } from 'react';
 import { PawnRecord } from '@/types/pawn';
 import { calculateInterest, formatCurrency } from '@/lib/pawnCalculations';
 import { Button } from '@/components/ui/button';
-import { X, AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, CalendarIcon } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 interface RedeemModalProps {
   record: PawnRecord;
-  onConfirm: () => void;
+  onConfirm: (redemptionDate: string) => void;
   onClose: () => void;
 }
 
 export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
+  const [redemptionDate, setRedemptionDate] = useState<Date>(new Date());
+  
+  const redemptionDateString = redemptionDate.toISOString().split('T')[0];
   const { days, totalMonths, effectiveMonths, interestAmount, upfrontDeduction, oneMonthInterest, paperInterest, totalPayable } = calculateInterest(
     record.pawnAmount,
     record.interestRate,
     record.pawnDate,
-    undefined,
+    redemptionDateString,
     record.paperLoanInterest
   );
 
@@ -48,6 +56,32 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
           <div className="flex justify-between">
             <span className="text-muted-foreground">Pawn Amount</span>
             <span className="font-medium text-foreground">{formatCurrency(record.pawnAmount)}</span>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-muted-foreground">Redemption Date</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-[140px] justify-start text-left font-normal h-8",
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {format(redemptionDate, "dd/MM/yyyy")}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={redemptionDate}
+                  onSelect={(date) => date && setRedemptionDate(date)}
+                  disabled={(date) => date < new Date(record.pawnDate)}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Duration</span>
@@ -98,7 +132,7 @@ export function RedeemModal({ record, onConfirm, onClose }: RedeemModalProps) {
           <Button type="button" variant="outline" onClick={onClose} className="flex-1">
             Cancel
           </Button>
-          <Button type="button" variant="success" onClick={onConfirm} className="flex-1">
+          <Button type="button" variant="success" onClick={() => onConfirm(redemptionDateString)} className="flex-1">
             Confirm Redemption
           </Button>
         </div>
